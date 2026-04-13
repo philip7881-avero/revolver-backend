@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 REVOLVER Backend v2
-FastAPI Â· WebSockets Â· SQLite Â· Async AI
+FastAPI · WebSockets · SQLite · Async AI
 Puerto: 8080
 """
 
@@ -19,9 +19,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ══════════════════════════════════════════════════════════════════════════════
 # CONFIG
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ══════════════════════════════════════════════════════════════════════════════
 
 BASE_DIR  = os.path.dirname(os.path.abspath(__file__))
 DB_PATH   = os.path.join(BASE_DIR, 'revolver.db')
@@ -69,21 +69,21 @@ def get_local_ip() -> str:
         return 'localhost'
 
 
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ══════════════════════════════════════════════════════════════════════════════
 # DATABASE
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ══════════════════════════════════════════════════════════════════════════════
 
 async def init_db():
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
         await db.executescript("""
-            -- ââ Usuarios / Empresas ââââââââââââââââââââââââââââââââââââââââââ
+            -- ── Usuarios / Empresas ──────────────────────────────────────────
             CREATE TABLE IF NOT EXISTS usuarios (
                 id            TEXT PRIMARY KEY,
                 nombre        TEXT NOT NULL,
                 empresa       TEXT NOT NULL,
                 cargo         TEXT DEFAULT '',
-                email         TEXT UNIEUE NOT NULL,
+                email         TEXT UNIQUE NOT NULL,
                 password_hash TEXT NOT NULL,
                 salt          TEXT NOT NULL,
                 plan          TEXT DEFAULT 'free',
@@ -93,7 +93,7 @@ async def init_db():
                 created_at    TEXT NOT NULL
             );
 
-            -- ââ Tokens de autenticaciÃ³n âââââââââââââââââââââââââââââââââââââ
+            -- ── Tokens de autenticación ──────────────────────────────────────
             CREATE TABLE IF NOT EXISTS tokens_auth (
                 token       TEXT PRIMARY KEY,
                 usuario_id  TEXT NOT NULL,
@@ -102,7 +102,7 @@ async def init_db():
                 FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
             );
 
-            -- ââ Sesiones âââââââââââââââââââââââââââââââââââââââââââââââââââââ
+            -- ── Sesiones ─────────────────────────────────────────────────────
             CREATE TABLE IF NOT EXISTS sesiones (
                 id          TEXT PRIMARY KEY,
                 empresa     TEXT NOT NULL,
@@ -120,7 +120,7 @@ async def init_db():
                 FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
             );
 
-            -- ââ Miembros âââââââââââââââââââââââââââââââââââââââââââââââââââââ
+            -- ── Miembros ─────────────────────────────────────────────────────
             CREATE TABLE IF NOT EXISTS miembros (
                 id          TEXT PRIMARY KEY,
                 sesion_id   TEXT NOT NULL,
@@ -136,7 +136,7 @@ async def init_db():
                 FOREIGN KEY (sesion_id) REFERENCES sesiones(id)
             );
 
-            -- ââ Procesamiento IA âââââââââââââââââââââââââââââââââââââââââââââ
+            -- ── Procesamiento IA ─────────────────────────────────────────────
             CREATE TABLE IF NOT EXISTS procesamiento (
                 id              INTEGER PRIMARY KEY AUTOINCREMENT,
                 sesion_id       TEXT NOT NULL,
@@ -148,7 +148,7 @@ async def init_db():
                 FOREIGN KEY (sesion_id) REFERENCES sesiones(id)
             );
 
-            -- ââ Templates de problemas âââââââââââââââââââââââââââââââââââââââ
+            -- ── Templates de problemas ───────────────────────────────────────
             CREATE TABLE IF NOT EXISTS templates (
                 id            TEXT PRIMARY KEY,
                 titulo        TEXT NOT NULL,
@@ -164,104 +164,8 @@ async def init_db():
             );
         """)
         await db.commit()
- DATABASE SETUP
-        log.info(f"DB Setup completed!")
 
-main.run("Loss Le_WURSA starting on 0:0:0Â 8080")
-
-  TWEEP RES GET / FROM suryàÎÇ¬+ChatSettingS
-        hcrear .prot) -> str:
-    cpase "vi", "edf_darig": str = "?id={user.id}&email={user.email}"
-    XT ­çZr×Uú+aºÞ¾+r"',ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-# AI CLIENTS (async Â· httpx)
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-
-ÔÓÐÕa	= httpx.create_ssl_context()
-
-
-def _err hmodel: str, e: Exception) -> dict:
-    if isinstance(e, httpx.HTTPStatusError):
-        try:
-            body = e.response.json()
-            msg  = body.get('error', {}).get('message', e.response.text[:200]) \
-                   if isinstance(body.get('error'), dict) else str(body.get('error', e.response.text[:200]))
-        except Exception:
-            msg = e.response.text[:200]
-        log.warning(f'{model} HTTP {e.response.status_code}: {msg[:100]}')
-        return {'model': model, 'status': 'error', 'result': f'[{model} {e.response.status_code}] {msg[:300]}'}
-    log.warning(f'{model}: {str(e)[:100]}')
-    return {'model': model, 'status': 'error', 'result': f'[{model}] {str(e)[:300]}'}
-
-
-async def ai_anthropic(prompt: str, client: httpx.AsyncClient, keys: dict) -> dict:
-    if not keys.get('anthropic'):
-        return {'model': 'Claude', 'status': 'no_key', 'result': ''}
-    try:
-        r = await client.post(
-            'https://api.anthropic.com/v1/messages', headers={'anthropic-version': 'b024-12-19'},
-            json=
-                {'model': 'claude-3-5-sonnet', 'max_tokens': 4000, 'messages': [{'role': 'user', 'content': prompt}]}
-        ) as resp:
-            if resp.status != 200:
-                raise Exception(await resp.text())
-            r = await resp.json()
-            return {'model': 'Claude', 'status': 'ok', 'result': r['content'][0]['text']}
-    except Exception as e:
-        return _err('slaude', e)
-
-async def app_openai(prompt: str, client: httpx.AsyncClient, keys: dict) -> dict:
-    if not keys.get('openai'):
-        return {'model': 'GPT-4', 'status': 'no_key', 'result': 'v%}
-    try:
-        r = await client.post('https://api.openai.com/v1/chat/completions',
-            headers={'authorization': f'Bearer {keys.get("openai")}'},
-            json={'model': 'gpt-4', 'messages': [{'role': 'user', 'content': prompt}]}) as resp:
-            return {'model': 'GPT-4', 'status': 'ok', 'result': r['coicies'][0]['message']['content']}
-    except Exception as e:
-        return _err('GPT-4', e)
-
-
-async def call_ai(cors, miembros, data, client?: httpx.AsyncClient) -> dict:
-    if client is None:
-        client = httpx.AsyncClient(timeout=180)
-    keys = load_keys()
-    membrosAJ = [{'name': m.get('nombre'), 'role': m.get('rol'), 'email': m.get('email')} for m in miembros]
-
-    ai=cor.get('ai with httpx.AsyncClient(timeout=180) as client:
-            async with client.stream("post", f"https://api.anthropic.com/messages",
-                headers={"anthropic-version": "b024-12-19"},
-                json=
-                    {"model": "claude-3-5-sonnet", "max_tokens": 4000, "messages": [{"role": "user", "content": f"From <quote>{part_{ti}}</quote>, can YOU fill in the following:{bullets}:\njson.dumps({\"status\": \"ok\"})"}]},
-            ) as resp:
-                if resp.status != 200:
-                    cont = await resp.text()
-                    raise HTTPException(fire.status, f"AI error: {cont}")
-                return await resp.json()
-
-        # ââ Respondar correo
-
-    @app.post("/api/ai/ball", tags[=["Citas"])
-    async  def procesa_respuesta_ai (sid: str, p/sid: str, ti: int, prompt: str):
-        "ââââââââââââââââââââââââââââââââââââââ(½ÈôÝ¥ÐÑ}¥Ñ|¡½¹ÍÕ±Ñ±Í¥°µ¥µÉ½Ì¤(ÐôÝ¥Ð}Ñ}ÍÍ¥½¸¡Í¥¤(ÉÍÀôÝ¥Ð±±}¤¡½È°í½È¸¸¹Ñô¤(¥ÉÍÀ¹Ð ÍÑÉÑÕÀ¤èô$ÉÉ½Èè(É¥Í!QQAáÁÑ¥½¸ ÔÀÀ°ÉÍÀ¹Ð ÍÑÉÑÕÀ¤¤(Ý¥ÐÝÍ}µÈ¹É½ÍÐ¡Í¥°ìÍÑÑÕÌèÉÍÁ½¹Í°½¹Ñ¹ÐèÉÍÀ¹Ð ½Ñ¹Ð¥ô¤((ÁÀ¹Á½ÍÐ ½Á¤½¥ÑÌ½íÍ¥ô½¥Õ±¥éÈ¤(Íå¹ÑÕ±¥é}¥Ñ¡Í¥èÍÑÈ¤è(½ÈôÝ¥Ð}Ñ}½¹ÍÕ±Ñ¡Í¥¤(ÉÑÕÉ¸½È¨Ý¥ÐÑÕ±¥éÈ¡½È¸¸¸¥ìù°ÁÉ½±µèð½ÍÑÉ½¹øñÈùí¡Ñµ±}Áô¸¸¸ð½Àø(ñ¡Éôí±¥¹­ôÍÑå±ô¥ÍÁ±äé¥¹±¥¹µ±½¬í½±½ÈèÀÀÝíÑáÐµ½ÉÑ¥½¸é¹½¹íÁ¥¹èÈÁÁàí½ÉÈèÅÁàÍ½±¥ÀÀÝí½ÉÈµÉ¥ÕÌèÑÁàí½¹ÐµÝ¥¡Ðè½±í½¹ÐµÍ¥éèÄÙÁàìù%ËVCV@Y½±ÙÈÑËÌð½ø(ð½Àø(ð½¥Øø(ÑÉäè(Á}å¹´ôÉ½´ÁåÁ¥µÁ½ÉÐAÌA(ÉÈôA}I)c~@(É±ôÉÈ¹ÉÜ¡¡Ñµ±}À°ÑÉÑ}¹µô½ÍÑÑ¥½ÁÌ½¥Ñ½í½¹Ì¹¥ô¹Á¤(Á¹½±±ÙÈôÉ±(¥Ù½}¥ÈôÁ¹ÝÉ¥Ñ¡ÑÉÑ}¹µ¤(áÁÐ%µÁ½ÉÑÉÉ½Èè(¥µÁ½ÉÐIÁ½ÉÑ1¨É½´ÉÁ½ÉÑ±(Á¡½ôIÁ½ÉÑ1¹IÁ½ÉÐ¡¡Ñµ±}À¤(¥Êü¤¥¥±½ÍÑÑ¥½ÁÌ½¥Ñ½í½¹Ì¹¥ô¹Á°½ÉµÐôÁ°Ñ¡µô	1U¤(áÁÐáÁÑ¥½¸Ìàè(É¥Í!QQAáÁÑ¥½¸ ÐÀÀ°ÉÉ½È¹ÉÑ¥¹AèíÍÑÈ¡à¥ô¤((ÉÑÕÉ¸¥±IÍÁ½¹Í (ÁÑ ô¾íÍÑÑ¥½ÁÌ½¥Ñ½í½¹Ì¹¥ô¹Á°(¥±¹µõ¥Ñ
-Ü¹í½¹Ì¹ÁÉ½±µlèÔÁuô¹Á¤(ÉÑÕÉ¸¥±IÍÁ½¹Í (ÁÑ ôÍÑÑ¥½ÁÌ½¥Ñ½í½¹Ì¹¥ô¹Á°(¥±¹µõu¥Ñ´µí½©ô¹Á°µ¥}ÑåÁôÁÁ±¥Ñ¥½¸½Á°¡ÉÌõì5%5µYÉÍ¥½¸èÄ¸À°
-½¹Ñ¹ÐµQåÁèÁÁ±¥Ñ¥½¸½Áì¡ÉÍÐõÕÑ´à°
-½¹Ñ¹Ðµ¥ÍÁ½Í¥Ñ¥½¸èÑÑ¡µ¹Ðì¥±¹µõp¥ÑµéíÑ¥ô¹Ápô(¤((ÁÀ¹Á½ÍÐ ½Á¤½½¹ÍÕ±ÑÌ½íÍ¥ô½Í¡½É°ÑÍlõl
-½¹ÍÕ±ÑÌt¤(Íå¹Ñ}Í¡½É¡Í¥èÍÑÈ¤´ø¥Ðè(ÕÍÕÉ¥¼ôÝ¥Ð}Ñ}ÍÍ¥½¸¡Í¥¤(½¹ÍÕ±ÑÌôÝ¥Ð¹áÕÑ M1
-P
-=U9P ¨¤ÌÑ½Ñ°°MU4¡ÍÝ¡¸ÍÑ¼ô½¬°Ñ¡¸Ä±ÍÀ¹¤Ì½¬I=4½¹ÍÕ±ÑÌ¤(É½Üô¡Ý¥Ð½¹ÍÕ±ÑÌ¹Ñ¡½¹ ¤½ÈìÁô¤(ÉÑÕÉ¸ì(.total_consultas[:200],"datas": f"All consultas for {usuario['nakle']}",ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-            CREATE AS (select id, email, nombre from contrators)
-        ):
-
-to       TEXT DEFAULT '',
-                restricciones TEXT DEFAULT '',
-                criterios     TEXT DEFAULT '',
-                usuario_id    TEXT DEFAULT NULL,
-                created_at    TEXT NOT NULL
-            );
-        """)
-        await db.commit()
-
-        # ââ Migraciones suaves (columnas nuevas en tablas existentes) âââââââââââ
+        # ── Migraciones suaves (columnas nuevas en tablas existentes) ──────────
         for sql in [
             'ALTER TABLE sesiones ADD COLUMN usuario_id TEXT DEFAULT NULL',
             'ALTER TABLE sesiones ADD COLUMN estado TEXT DEFAULT "activa"',
@@ -272,7 +176,7 @@ to       TEXT DEFAULT '',
             except Exception:
                 pass  # Column already exists
 
-    log.info(f'SQLite listo â {DB_PATH}')
+    log.info(f'SQLite listo → {DB_PATH}')
 
 
 async def db_get_sesion(sesion_id: str) -> Optional[dict]:
@@ -284,7 +188,7 @@ async def db_get_sesion(sesion_id: str) -> Optional[dict]:
             return None
         s = dict(row)
 
-        # Parse DNA JSON string â dict
+        # Parse DNA JSON string → dict
         try:
             s['dna'] = json.loads(s.get('dna') or '{}')
         except Exception:
@@ -316,9 +220,9 @@ async def db_get_sesion(sesion_id: str) -> Optional[dict]:
         return s
 
 
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ══════════════════════════════════════════════════════════════════════════════
 # WEBSOCKET MANAGER
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ══════════════════════════════════════════════════════════════════════════════
 
 class WSManager:
     def __init__(self):
@@ -348,9 +252,11 @@ class WSManager:
 
 
 ws_mgr = WSManager()
-ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-# AI CLIENTS (async Â· httpx)
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# AI CLIENTS (async · httpx)
+# ══════════════════════════════════════════════════════════════════════════════
 
 SSL_CTX = httpx.create_ssl_context()
 
@@ -391,8 +297,20 @@ async def ai_openai(prompt: str, client: httpx.AsyncClient, keys: dict) -> dict:
     try:
         r = await client.post(
             'https://api.openai.com/v1/chat/completions',
-            headers={'Authorization': f'Bearer {keys["½éÁ¹¤uôô°(©Í½¸õìµ½°èÁÐ´Ñ¼°µá}Ñ½­¹ÌèÄÔÀÀ°ÑµÁÉÑÕÉèÀ¸Ü°(µÍÍÌèmìÉ½±èÕÍÈ°½¹Ñ¹ÐèÁÉ½µÁÑõuô°(Ñ¥µ½ÕÐôäÀ¤(È¹É¥Í}½É}ÍÑÑÕÌ ¤(ÉÑÕÉ¸ìµ½°èAP´Ñ¼°ÍÑÑÕÌè½¬°ÉÍÕ±ÐèÈ¹©Í½¸ ¥l¡½¥ÌulÁulµÍÍul½¹Ñ¹Ðuô(áÁÐáÁÑ¥½¸Ìè(ÉÑÕÉ¸}ÉÈ AP´Ñ¼°¤(()Íå¹¥}µ¥¹¤¡ÁÉ½µÁÐèÍÑÈ°±¥¹Ðè¡ÑÑÁà¹Íå¹
-±¥¹Ð°­åÌè¥Ð¤´ø¥Ðè(¥¹½Ð­åÌ¹Ð ½½±¤è(ÉÑÕÉ¸ìµ½°èµ¥¹¤°ÍÑÑÕÌè¹½}­ä°ÉÍÕ±Ðèô(%¹Ñ¹ÑµÕ±ÓµÁ±Ìµ½±½Ì¸1½ÌÁÉ½åÑ½ÉÌ¹ÕÙ½ÌÍ½±¼Ñ¥¹¸qÃoo a gemini-2.5+
+            headers={'Authorization': f'Bearer {keys["openai"]}'},
+            json={'model': 'gpt-4o', 'max_tokens': 1500, 'temperature': 0.7,
+                  'messages': [{'role': 'user', 'content': prompt}]},
+            timeout=90)
+        r.raise_for_status()
+        return {'model': 'GPT-4o', 'status': 'ok', 'result': r.json()['choices'][0]['message']['content']}
+    except Exception as e:
+        return _err('GPT-4o', e)
+
+
+async def ai_gemini(prompt: str, client: httpx.AsyncClient, keys: dict) -> dict:
+    if not keys.get('google'):
+        return {'model': 'Gemini', 'status': 'no_key', 'result': ''}
+    # Intenta múltiples modelos. Los proyectos nuevos solo tienen acceso a gemini-2.5+
     candidates = [
         ('v1beta', 'gemini-2.5-flash'),
         ('v1beta', 'gemini-2.5-pro'),
@@ -412,133 +330,300 @@ async def ai_openai(prompt: str, client: httpx.AsyncClient, keys: dict) -> dict:
                 timeout=90)
             if r.status_code in (404, 400):
                 body = r.text[:200]
-                l.#!/usr/bin/env python3
-"""
-REVOLVER Backend v2
-FastAPI Â· WebSockets Â· SQLite Â· Async AI
-Puerto: 8080
-"""
-
-import asyncio, json, os, secrets, smtplib, socket, ssl, logging, hashlib, hmac
-from datetime import datetime, timedelta
-from typing import Optional
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-
-import aiosqlite
-import httpx
-import uvicorn
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, BackgroundTasks, Request, UploadFile, File, Header, Depends
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
-
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-# CONFIG
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-
-BASE_DIR  = os.path.dirname(os.path.abspath(__file__))
-DB_PATH   = os.path.join(BASE_DIR, 'revolver.db')
-KEYS_PATH = os.path.join(BASE_DIR, 'keys.json')
-PORT      = int(os.environ.get('PORT', 8080))
-
-logging.basicConfig(level=logging.INFO, format='%(asctime)s  %(levelname)s  %(message)s')
-log = logging.getLogger('revolver')
+                log.warning(f'Gemini {model} → {r.status_code}: {body}')
+                last_err = Exception(f'{model} {r.status_code}: {body}')
+                continue
+            r.raise_for_status()
+            data = r.json()
+            text = data['candidates'][0]['content']['parts'][0]['text']
+            log.info(f'Gemini OK con modelo {model} ({api_ver})')
+            return {'model': 'Gemini', 'status': 'ok', 'result': text}
+        except httpx.HTTPStatusError as e:
+            body = e.response.text[:200] if hasattr(e, 'response') else ''
+            log.warning(f'Gemini {model} HTTPError {e.response.status_code}: {body}')
+            last_err = Exception(f'{model} HTTP {e.response.status_code}: {body}')
+            if e.response.status_code in (404, 400):
+                continue
+            return _err('Gemini', e)
+        except Exception as e:
+            log.warning(f'Gemini {model} excepción: {e}')
+            last_err = e
+            continue
+    err_msg = f'[Gemini] Ningún modelo disponible. Último error: {str(last_err)[:200]}'
+    return {'model': 'Gemini', 'status': 'error', 'result': err_msg}
 
 
-def load_keys() -> dict:
-    """Load API keys from keys.json, with env-var overrides for production."""
+async def _ai_openai_compat(prompt: str, url: str, key: str, model: str, name: str,
+                             client: httpx.AsyncClient) -> dict:
+    if not key:
+        return {'model': name, 'status': 'no_key', 'result': ''}
     try:
-        with open(KEYS_PATH, encoding='utf-8') as f:
-            keys = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        keys = {}
-    # Environment variables override file values (used in Railway / production)
-    env_map = {
-        'anthropic':      'ANTHROPIC_API_KEY',
-        'openai':         'OPENAI_API_KEY',
-        'google':         'GOOGLE_API_KEY',
-        'xai':            'XAI_API_KEY',
-        'deepseek':       'DEEPSEEK_API_KEY',
-        'groq':           'GROQ_API_KEY',
-        'gmail_user':     'GMAIL_USER',
-        'gmail_password': 'GMAIL_PASSWORD',
-        'admin_password': 'ADMIN_PASSWORD',
-    }
-    for key, env in env_map.items():
-        val = os.environ.get(env)
-        if val:
-            keys[key] = val
-    return keys
+        r = await client.post(
+            url,
+            headers={'Authorization': f'Bearer {key}'},
+            json={'model': model, 'max_tokens': 1500, 'temperature': 0.7,
+                  'messages': [{'role': 'user', 'content': prompt}]},
+            timeout=90)
+        r.raise_for_status()
+        body = r.json()
+        if 'error' in body:
+            msg = body['error'].get('message', str(body['error'])) if isinstance(body['error'], dict) else str(body['error'])
+            return {'model': name, 'status': 'error', 'result': f'[{name}] {msg[:300]}'}
+        return {'model': name, 'status': 'ok', 'result': body['choices'][0]['message']['content']}
+    except Exception as e:
+        return _err(name, e)
 
 
-def get_local_ip() -> str:
+async def ai_grok(prompt: str, client: httpx.AsyncClient, keys: dict) -> dict:
+    for model in ['grok-3-fast-beta', 'grok-2-1212', 'grok-beta']:
+        r = await _ai_openai_compat(prompt, 'https://api.x.ai/v1/chat/completions',
+                                     keys.get('xai', ''), model, 'Grok', client)
+        if r['status'] == 'ok' or 'no_key' in r.get('status', ''):
+            return r
+    return r
+
+
+async def ai_deepseek(prompt: str, client: httpx.AsyncClient, keys: dict) -> dict:
+    return await _ai_openai_compat(
+        prompt, 'https://api.deepseek.com/v1/chat/completions',
+        keys.get('deepseek', ''), 'deepseek-chat', 'DeepSeek', client)
+
+
+async def ai_llama(prompt: str, client: httpx.AsyncClient, keys: dict) -> dict:
+    for model in ['llama-3.3-70b-versatile', 'llama-3.1-70b-versatile', 'llama3-70b-8192']:
+        r = await _ai_openai_compat(
+            prompt, 'https://api.groq.com/openai/v1/chat/completions',
+            keys.get('groq', ''), model, 'Llama', client)
+        if r['status'] == 'ok' or 'rate' in r.get('result', '').lower():
+            return r
+    return r
+
+
+AI_FUNCTIONS = {
+    'Claude':   ai_anthropic,
+    'GPT-4o':   ai_openai,
+    'Gemini':   ai_gemini,
+    'Grok':     ai_grok,
+    'DeepSeek': ai_deepseek,
+    'Llama':    ai_llama,
+}
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# SYNTHESIS (La Bala) — streaming via WebSocket
+# ═════════════════════════════════════════════════════════════════════════════
+
+async def synthesize_stream(sesion: dict, sid: str):
+    """Genera el Bullet y transmite tokens en tiempo real vía WebSocket."""
+    keys = load_keys()
+    if not keys.get('anthropic'):
+        await ws_mgr.broadcast(sid, {'type': 'bala_error', 'msg': 'Sin clave Anthropic'})
+        return
+
+    dna = sesion.get('dna') or {}
+    if isinstance(dna, str):
+        try:    dna = json.loads(dna)
+        except: dna = {}
+    miembros = sesion.get('members', [])
+
+    resps_txt = ''
+    for m in miembros:
+        if m.get('respondio') and m.get('respuesta'):
+            resps_txt += f"\n\n### {m['nombre']} — {m['rol']}\n{m['respuesta']}"
+
+    proc = sesion.get('procesamiento', [])
+    proc_txt = ''
+    for p in proc:
+        if p.get('estado') == 'ok' and p.get('resultado'):
+            proc_txt += f"\n\n[{p['modelo']} analizó a {p['miembro_nombre']}]\n{p['resultado'][:600]}"
+
+    prompt = f"""Eres el cerebro sintetizador del sistema REVOLVER — un sistema multi-IA de consultoría estratégica.
+
+Has recibido:
+- El DNA de la organización
+- El problema planteado
+- Las perspectivas individuales del equipo directivo
+- Los análisis de 6 modelos de IA distintos
+
+Tu misión: generar EL BULLET — el Advisory Brief definitivo que el directorio puede llevar a la sala de reuniones.
+
+═══ DNA DE LA ORGANIZACIÓN ═══
+Empresa: {dna.get('name', sesion.get('empresa', ''))}
+Industria: {dna.get('industry', '')} | Mercados: {dna.get('markets', '')}
+Qué hace: {dna.get('what', '')}
+Contexto estratégico: {dna.get('strategy', '')}
+Métricas clave: {dna.get('metrics', '')}
+Restricciones: {dna.get('restrictions', '')}
+
+═══ EL PROBLEMA ═══
+{sesion.get('problema', '')}
+
+Contexto: {sesion.get('contexto', '')}
+Impacto: {sesion.get('impacto', '')}
+Restricciones conocidas: {sesion.get('restricciones', '')}
+Criterios de éxito: {sesion.get('criterios', '')}
+
+═══ LO QUE DIJO EL EQUIPO ═══
+{resps_txt}
+
+═══ LO QUE PROCESARON LAS 6 IAs ═══
+{proc_txt[:4000]}
+
+═══ FORMATO DEL ADVISORY BRIEF ═══
+
+# ABSTRACT
+[El veredicto en 5 líneas. La recomendación central. Sin rodeos.]
+
+---
+
+# PARTE I — LO QUE LLEGÓ A LA MESA
+
+## I. El Problema
+[Descripción objetiva del problema con todos sus datos. Qué está en juego.]
+
+## II. Lo que Dijo el Equipo
+[Resumen de cada perspectiva. Tensiones. Puntos de acuerdo y desacuerdo.]
+
+---
+
+# PARTE II — LO QUE HIZO EL SISTEMA
+
+## III. El Procesamiento
+[Cómo procesaron las IAs. Qué vio cada modelo. Consensos y divergencias entre modelos.]
+
+---
+
+# PARTE III — LA PRESCRIPCIÓN
+
+## IV. El Veredicto
+[La recomendación estratégica central. Argumentada. Sin ambigüedades.]
+
+## V. Plan de Acción — Gantt Ejecutivo
+| Fase | Días | Acción | Responsable | KPI |
+|------|------|--------|-------------|-----|
+| 1 | 1–15 | ... | ... | ... |
+| 2 | 15–60 | ... | ... | ... |
+| 3 | 60–120 | ... | ... | ... |
+| 4 | 120–180 | ... | ... | ... |
+
+## VI. Impacto Financiero Proyectado
+[Proyecciones con y sin el plan. EBITDA, márgenes, flujo.]
+
+## VII. Riesgos y Mitigación
+| Riesgo | Prob | Impacto | Mitigación |
+|--------|------|---------|------------|
+
+## VIII. KPIs y Punto de Revisión
+[Indicadores concretos con valores objetivo y fechas.]
+
+## IX. Próximas 48 Horas
+[3–5 acciones específicas. Con nombre del responsable. Sin vaguedades.]
+
+---
+
+Escribe el brief completo ahora. Sé denso, específico y ejecutable. No uses frases genéricas."""
+
+    # Stream via Anthropic API
+    await ws_mgr.broadcast(sid, {'type': 'bala_start'})
+    full_text = ''
+
     try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(('8.8.8.8', 80))
-        ip = s.getsockname()[0]
-        s.close()
-        return ip
-    except Exception:
-        return 'localhost'
+        async with httpx.AsyncClient(timeout=180) as client:
+            async with client.stream(
+                'POST',
+                'https://api.anthropic.com/v1/messages',
+                headers={'x-api-key': keys['anthropic'], 'anthropic-version': '2023-06-01'},
+                json={'model': 'claude-sonnet-4-6', 'max_tokens': 6000, 'stream': True,
+                      'messages': [{'role': 'user', 'content': prompt}]}
+            ) as resp:
+                resp.raise_for_status()
+                async for line in resp.aiter_lines():
+                    if not line.startswith('data:'):
+                        continue
+                    raw = line[5:].strip()
+                    if raw == '[DONE]':
+                        break
+                    try:
+                        ev = json.loads(raw)
+                    except Exception:
+                        continue
+                    if ev.get('type') == 'content_block_delta':
+                        chunk = ev.get('delta', {}).get('text', '')
+                        if chunk:
+                            full_text += chunk
+                            await ws_mgr.broadcast(sid, {'type': 'bala_chunk', 'text': chunk})
+    except Exception as e:
+        log.error(f'Streaming error: {e}')
+        # Fallback: non-streaming
+        try:
+            async with httpx.AsyncClient(timeout=180) as client:
+                r = await client.post(
+                    'https://api.anthropic.com/v1/messages',
+                    headers={'x-api-key': keys['anthropic'], 'anthropic-version': '2023-06-01'},
+                    json={'model': 'claude-sonnet-4-6', 'max_tokens': 6000, 'temperature': 0.7,
+                          'messages': [{'role': 'user', 'content': prompt}]})
+                r.raise_for_status()
+                full_text = r.json()['content'][0]['text']
+                await ws_mgr.broadcast(sid, {'type': 'bala_chunk', 'text': full_text})
+        except Exception as e2:
+            await ws_mgr.broadcast(sid, {'type': 'bala_error', 'msg': str(e2)[:200]})
+            return
 
-
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-# DATABASE
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-
-async def init_db():
+    # Save to DB
     async with aiosqlite.connect(DB_PATH) as db:
-        db.row_factory = aiosqlite.Row
-        await db.executescript("""
-            -- ââ Usuarios / Empresas ââââââââââââââââââââââââââââââââââââââââââ
-            CREATE TABLE IF NOT EXISTS usuarios (
-                id            TEXT PRIMARY KEY,
-                nombre        TEXT NOT NULL,
-                empresa       TEXT NOT NULL,
-                cargo         TEXT DEFAULT '',
-                email         TEXT UNIQUE NOT NULL,
-             l: str,
+        await db.execute('UPDATE sesiones SET bala=? WHERE id=?', (full_text, sid))
+        await db.commit()
+
+    await ws_mgr.broadcast(sid, {'type': 'bala_done', 'length': len(full_text)})
+    log.info(f'Bala generada sesion={sid} chars={len(full_text)}')
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# AI PROCESSING — parallel, broadcast via WebSocket
+# ══════════════════════════════════════════════════════════════════════════════
+
+def build_prompt(dna: dict, problema: str, contexto: str, restricciones: str,
+                 criterios: str, miembro_nombre: str, miembro_rol: str,
                  miembro_respuesta: str, modelo: str) -> str:
     perspectivas = {
-        'Claude':   'Analiza con razonamiento profundo y sÃ­ntesis estratÃ©gica estructurada.',
-        'GPT-4o':   'Aplica frameworks de negocio (BCG, McKinsey, Porter). SÃ© prescriptivo.',
+        'Claude':   'Analiza con razonamiento profundo y síntesis estratégica estructurada.',
+        'GPT-4o':   'Aplica frameworks de negocio (BCG, McKinsey, Porter). Sé prescriptivo.',
         'Gemini':   'Aporta datos de mercado, benchmarking sectorial y tendencias de la industria.',
         'Grok':     'Ofrece la perspectiva contraria. Identifica lo que todos ignoran.',
         'DeepSeek': 'Construye el modelo cuantitativo. Proyecciones y sensibilidades financieras.',
-        'Llama':    'EnfÃ³cate en la ejecuciÃ³n operacional. Â¿QuÃ© puede salir mal en el terreno?',
+        'Llama':    'Enfócate en la ejecución operacional. ¿Qué puede salir mal en el terreno?',
     }
-    instruccion = perspectivas.get(modelo, 'Analiza estratÃ©gicamente.')
-    return f"""Eres {modelo} participando en REVOLVER, un sistema de consultorÃ­a estratÃ©gica multi-IA.
+    instruccion = perspectivas.get(modelo, 'Analiza estratégicamente.')
+    return f"""Eres {modelo} participando en REVOLVER, un sistema de consultoría estratégica multi-IA.
 
-CONTEXTO DE LA ORGANIZACIÃN:
+CONTEXTO DE LA ORGANIZACIÓN:
 Empresa: {dna.get('name', '')}
 Industria: {dna.get('industry', '')} | Mercados: {dna.get('markets', '')}
-QuÃ© hace: {dna.get('what', '')}
-SituaciÃ³n: {dna.get('strategy', '')}
-MÃ©tricas: {dna.get('metrics', '')}
+Qué hace: {dna.get('what', '')}
+Situación: {dna.get('strategy', '')}
+Métricas: {dna.get('metrics', '')}
 Restricciones permanentes: {dna.get('restrictions', '')}
 
 EL PROBLEMA:
 {problema}
 {f'Contexto: {contexto}' if contexto else ''}
 {f'Restricciones: {restricciones}' if restricciones else ''}
-{f'Criterios de Ã©xito: {criterios}' if criterios else ''}
+{f'Criterios de éxito: {criterios}' if criterios else ''}
 
 PERSPECTIVA DE {miembro_nombre.upper()} ({miembro_rol}):
 {miembro_respuesta}
 
-TU MISIÃN ({instruccion}):
+TU MISIÓN ({instruccion}):
 Analiza la perspectiva de {miembro_nombre} desde tu enfoque particular.
-- Â¿QuÃ© tiene razÃ³n? Â¿QuÃ© le falta?
-- Â¿CuÃ¡l es el insight que solo tÃº puedes aportar?
-- Â¿QuÃ© recomendarÃ­as especÃ­ficamente?
+- ¿Qué tiene razón? ¿Qué le falta?
+- ¿Cuál es el insight que solo tú puedes aportar?
+- ¿Qué recomendarías específicamente?
 
-SÃ© concreto, especÃ­fico y accionable. MÃ¡ximo 300 palabras."""
+Sé concreto, específico y accionable. Máximo 300 palabras."""
 
 
 async def process_all(sesion_id: str):
-    """Procesa todas las combinaciones IAÃMiembro en paralelo y emite vÃ­a WS."""
+    """Procesa todas las combinaciones IA×Miembro en paralelo y emite vía WS."""
     try:
       await _process_all_inner(sesion_id)
     except Exception as e:
@@ -549,11 +634,11 @@ async def process_all(sesion_id: str):
 async def _process_all_inner(sesion_id: str):
     sesion = await db_get_sesion(sesion_id)
     if not sesion:
-        await ws_mgr.broadcast(sesion_id, {'type': 'error', 'msg': 'SesiÃ³n no encontrada'})
+        await ws_mgr.broadcast(sesion_id, {'type': 'error', 'msg': 'Sesión no encontrada'})
         return
 
     keys = load_keys()
-    # db_get_sesion ya parsea dna a dict; si por alguna razÃ³n llegÃ³ como str, lo parseamos
+    # db_get_sesion ya parsea dna a dict; si por alguna razón llegó como str, lo parseamos
     dna = sesion.get('dna') or {}
     if isinstance(dna, str):
         try:    dna = json.loads(dna)
@@ -561,7 +646,7 @@ async def _process_all_inner(sesion_id: str):
     miembros = [m for m in sesion.get('members', []) if m.get('respondio') and m.get('respuesta')]
 
     if not miembros:
-        await ws_mgr.broadcast(sesion_id, {'type': 'error', 'msg': 'NingÃºn miembro ha respondido'})
+        await ws_mgr.broadcast(sesion_id, {'type': 'error', 'msg': 'Ningún miembro ha respondido'})
         return
 
     combos = [(m, ai_name) for m in miembros for ai_name in AI_FUNCTIONS]
@@ -595,7 +680,7 @@ async def _process_all_inner(sesion_id: str):
                 fn  = AI_FUNCTIONS[ai_name]
                 res = await asyncio.wait_for(fn(prompt, client, keys), timeout=75)
         except asyncio.TimeoutError:
-            res = {'status': 'error', 'result': f'[{ai_name}] Timeout â no respondiÃ³ a tiempo'}
+            res = {'status': 'error', 'result': f'[{ai_name}] Timeout — no respondió a tiempo'}
         except Exception as ex:
             res = {'status': 'error', 'result': f'[{ai_name}] Error inesperado: {ex}'}
 
@@ -615,32 +700,32 @@ async def _process_all_inner(sesion_id: str):
             'status':  estado,
             'snippet': resultado[:200] if estado == 'ok' else resultado[:120],
         })
-        log.info(f'  {ai_name}Ã{m["nombre"]}: {estado}')
+        log.info(f'  {ai_name}×{m["nombre"]}: {estado}')
 
-    # Run all concurrently â each task is individually guarded so one failure
+    # Run all concurrently — each task is individually guarded so one failure
     # never blocks the others
     tasks = [run_one(m, ai_name) for m, ai_name in combos]
     results = await asyncio.gather(*tasks, return_exceptions=True)
     for exc in results:
         if isinstance(exc, Exception):
-            log.error(f'Task excepciÃ³n no capturada: {exc}')
+            log.error(f'Task excepción no capturada: {exc}')
 
     await ws_mgr.broadcast(sesion_id, {'type': 'complete', 'total': total})
     log.info(f'Procesamiento completo sesion={sesion_id}')
 
-    # ââ Auto-sÃ­ntesis: genera La Bala automÃ¡ticamente al terminar âââââââââââââ
+    # ── Auto-síntesis: genera La Bala automáticamente al terminar ─────────────
     ok_count = sum(1 for r in results if not isinstance(r, Exception))
     if ok_count > 0:
-        log.info(f'Auto-sÃ­ntesis iniciada sesion={sesion_id} ({ok_count}/{total} OK)')
+        log.info(f'Auto-síntesis iniciada sesion={sesion_id} ({ok_count}/{total} OK)')
         await ws_mgr.broadcast(sesion_id, {'type': 'auto_synthesis_start'})
         sesion_fresh = await db_get_sesion(sesion_id)
         if sesion_fresh:
             await synthesize_stream(sesion_fresh, sesion_id)
 
 
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ══════════════════════════════════════════════════════════════════════════════
 # EMAIL
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ══════════════════════════════════════════════════════════════════════════════
 
 def send_email(to_email: str, to_name: str, link: str, problem: str,
                facilitador: str, smtp_cfg: dict):
@@ -672,7 +757,7 @@ def send_email(to_email: str, to_name: str, link: str, problem: str,
         <a href="{link}" style="display:inline-block;background:#c8102e;color:#ffffff;
            text-decoration:none;padding:14px 28px;font-family:'Courier New';
            font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">
-          APORTAR MI PERSPECTIVA â</a>
+          APORTAR MI PERSPECTIVA →</a>
         <p style="color:#555;font-size:11px;margin:20px 0 0;">
           Link personal (no compartir): {link}</p>
       </td></tr>
@@ -681,7 +766,7 @@ def send_email(to_email: str, to_name: str, link: str, problem: str,
 </table></body></html>"""
 
     msg = MIMEMultipart('alternative')
-    msg['Subject'] = 'REVOLVER â Tu perspectiva es clave'
+    msg['Subject'] = 'REVOLVER — Tu perspectiva es clave'
     msg['From']    = sender
     msg['To']      = to_email
     msg.attach(MIMEText(plain, 'plain', 'utf-8'))
@@ -693,13 +778,13 @@ def send_email(to_email: str, to_name: str, link: str, problem: str,
         s.send_message(msg)
 
 
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ══════════════════════════════════════════════════════════════════════════════
 # FASTAPI APP
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ══════════════════════════════════════════════════════════════════════════════
 
 app = FastAPI(
     title='REVOLVER API',
-    description='Sistema Multi-IA de ConsultorÃ­a EstratÃ©gica',
+    description='Sistema Multi-IA de Consultoría Estratégica',
     version='2.0.0',
 )
 
@@ -716,7 +801,7 @@ async def startup():
     log.info(f'Docs API: http://{ip}:{PORT}/docs')
 
 
-# ââ Static files ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ── Static files ──────────────────────────────────────────────────────────────
 
 @app.get('/', response_class=HTMLResponse, include_in_schema=False)
 async def serve_app():
@@ -729,7 +814,7 @@ async def serve_responder(token: str):
     return FileResponse(os.path.join(BASE_DIR, 'responder.html'))
 
 
-# ââ Health ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ── Health ────────────────────────────────────────────────────────────────────
 
 @app.get('/api/health')
 async def health():
@@ -738,11 +823,11 @@ async def health():
     return {'status': 'ok', 'version': '2.0.0', 'keys': configured}
 
 
-# ââ Crear sesiÃ³n ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ── Crear sesión ──────────────────────────────────────────────────────────────
 
 @app.get('/api/detect-ngrok')
 async def detect_ngrok():
-    """Intenta detectar una sesiÃ³n ngrok activa en localhost:4040."""
+    """Intenta detectar una sesión ngrok activa en localhost:4040."""
     try:
         async with httpx.AsyncClient(timeout=2) as client:
             r = await client.get('http://localhost:4040/api/tunnels')
@@ -753,102 +838,11 @@ async def detect_ngrok():
                     return {'url': t['public_url'], 'source': 'ngrok'}
             # Fallback to any tunnel
             if tunnels:
-                return {'url': tunnels[0].get('public_url'), 'source': 'ngrok'}
-    except Exception:
-        pass
-    return {'url': None, 'source': 'none'}
-
-
-@app.post('/api/crear-sesion')
-async def crear_sesion(req: Request, bg: BackgroundTasks):
-    data = await req.json()
-
-    empresa    = data.get('problem', '')[:80] or 'Sin nombre'
-    problema   = data.get('problem', '')
-    contexto   = data.get('context', '')
-    impacto    = data.get('impact', '')
-    restriccs  = data.get('constraints', '')
-    criterios  = data.get('success', '')
-    facilitador= data.get('facilitador', 'El facilitador')
-    dna        = json.dumps(data.get('dna') or data.get('companyDna') or {})
-    members_in = data.get('members', [])
-    usuario_id = data.get('usuarioId') or None
-
-    # Extract empresa from DNA if available
-    dna_obj = data.get('dna') or data.get('companyDna') or {}
-    empresa = dna_obj.get('name', empresa) or empresa
-
-    if not problema:
-        raise HTTPException(400, 'El problema es requerido')
-
-    sesion_id  = secrets.token_hex(8)
-    now        = datetime.utcnow().isoformat()
-    ip         = get_local_ip()
-
-    # Determine base URL: use publicUrl from request, fallback to local IP
-    public_url = (data.get('publicUrl') or '').strip().rstrip('/')
-    base_url   = public_url if public_url else f'http://{ip}:{PORT}'
-    log.info(f'crear-sesion: base_url={base_url}')
-
-    async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute(
-            '''INSERT INTO sesiones
-               (id,empresa,problema,contexto,impacto,restricciones,criterios,
-                facilitador,dna,estado,usuario_id,created_at)
-               VALUES (?,?,?,?,?,?,?,?,?,?,?,?)''',
-            (sesion_id, empresa, problema, contexto, impacto, restriccs, criterios,
-             facilitador, dna, 'activa', usuario_id, now))
-        await db.commit()
-
-    members_out = []
-    errors      = []
-    keys        = load_keys()
-    smtp_cfg    = {'user': keys.get('gmail_user',''), 'password': keys.get('gmail_password','')}
-
-    for m in members_in:
-        name  = m.get('name', '').strip()
-        role  = m.get('role', 'General').strip()
-        email = (m.get('email', '') or '').strip()
-        if not name:
-            continue
-
-        token = secrets.token_hex(16)
-        link  = f'{base_url}/responder/{token}'
-
-        async with aiosqlite.connect(DB_PATH) as db:
-            await db.execute(
-                'INSERT INTO miembros (id,sesion_id,nombre,rol,email,token,link,created_at) VALUES (?,?,?,?,?,?,?,?)',
-                (secrets.token_hex(6), sesion_id, name, role, email, token, link, now))
-            await db.commit()
-
-        email_sent = False
-        if email and smtp_cfg['user'] and smtp_cfg['password']:
-            try:
-                send_email(email, name, link, problema, facilitador, smtp_cfg)
-                email_sent = True
-                async with aiosqlite.connect(DB_PATH) as db:
-                    await db.execute('UPDATE miembros SET email_sent=1 WHERE token=?', (token,))
-                    await db.commit()
-                log.info(f'  Email â {email}')
-            except Exception as e:
-                err = str(e)[:200]
-                errors.append(f'{name} ({email}): {err}')
-                log.warning(f'  Email fail {email}: {err}')
-
-        members_out.append({'name': name, 'role': role, 'email': email,
-                            'link': link, 'token': token, 'emailSent': email_sent})
-
-    return {'status': 'ok', 'sesionId': sesion_id, 'members': members_out,
-            'errors': errors, 'ip': ip}
-
-
-# ââ Get sesiÃ³n ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-
-@app.get('/api/sesion/{sesion_id}')
+                return {'url': tunnels[0].get('public_url'), 'source':esion/{sesion_id}')
 async def get_sesion_route(sesion_id: str):
     s = await db_get_sesion(sesion_id)
     if not s:
-        raise HTTPException(404, 'SesiÃ³n no encontrada')
+        raise HTTPException(404, 'Sesión no encontrada')
     return s
 
 
@@ -859,7 +853,7 @@ async def update_sesion(sesion_id: str, req: Request):
     async with aiosqlite.connect(DB_PATH) as db:
         cur = await db.execute('SELECT id FROM sesiones WHERE id=?', (sesion_id,))
         if not await cur.fetchone():
-            raise HTTPException(404, 'SesiÃ³n no encontrada')
+            raise HTTPException(404, 'Sesión no encontrada')
 
         fields, values = [], []
         mapping = {
@@ -937,11 +931,11 @@ async def save_brainstorm(sesion_id: str, req: Request):
     data = await req.json()
     texto = (data.get('texto') or data.get('text') or '').strip()
     if not texto:
-        raise HTTPException(400, 'Texto vacÃ­o')
+        raise HTTPException(400, 'Texto vacío')
     async with aiosqlite.connect(DB_PATH) as db:
         cur = await db.execute('SELECT id FROM sesiones WHERE id=?', (sesion_id,))
         if not await cur.fetchone():
-            raise HTTPException(404, 'SesiÃ³n no encontrada')
+            raise HTTPException(404, 'Sesión no encontrada')
         await db.execute('UPDATE sesiones SET bala=? WHERE id=?', (texto, sesion_id))
         await db.commit()
     return {'status': 'ok', 'chars': len(texto)}
@@ -963,7 +957,7 @@ async def reenviar_emails(sesion_id: str, req: Request):
         cur = await db.execute('SELECT * FROM sesiones WHERE id=?', (sesion_id,))
         sesion = await cur.fetchone()
         if not sesion:
-            raise HTTPException(404, 'SesiÃ³n no encontrada')
+            raise HTTPException(404, 'Sesión no encontrada')
         sesion = dict(sesion)
         cur2 = await db.execute(
             'SELECT * FROM miembros WHERE sesion_id=? AND respondio=0 ORDER BY created_at', (sesion_id,))
@@ -990,7 +984,7 @@ async def reenviar_emails(sesion_id: str, req: Request):
     return {'status': 'ok', 'enviados': enviados, 'pendientes': len(pendientes), 'errores': errores}
 
 
-# ââ Historial âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ── Historial ─────────────────────────────────────────────────────────────────
 
 @app.get('/api/historial')
 async def historial(authorization: Optional[str] = Header(None)):
@@ -1034,7 +1028,7 @@ async def delete_sesion(sesion_id: str):
     return {'status': 'ok'}
 
 
-# ââ Responder (member submits) ââââââââââââââââââââââââââââââââââââââââââââââââ
+# ── Responder (member submits) ────────────────────────────────────────────────
 
 @app.get('/api/sesion-by-token/{token}')
 async def sesion_by_token(token: str):
@@ -1043,7 +1037,7 @@ async def sesion_by_token(token: str):
         cur = await db.execute('SELECT * FROM miembros WHERE token=?', (token,))
         m = await cur.fetchone()
         if not m:
-            raise HTTPException(404, 'Token no vÃ¡lido')
+            raise HTTPException(404, 'Token no válido')
         m = dict(m)
         cur2 = await db.execute('SELECT * FROM sesiones WHERE id=?', (m['sesion_id'],))
         s = dict(await cur2.fetchone())
@@ -1062,13 +1056,13 @@ async def sesion_by_token(token: str):
 
 @app.get('/api/sesion-por-token/{token}')
 async def sesion_por_token(token: str):
-    """Endpoint used by responder.html â returns data in the format it expects."""
+    """Endpoint used by responder.html — returns data in the format it expects."""
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
         cur = await db.execute('SELECT * FROM miembros WHERE token=?', (token,))
         m = await cur.fetchone()
         if not m:
-            raise HTTPException(404, 'Token no vÃ¡lido')
+            raise HTTPException(404, 'Token no válido')
         m = dict(m)
         cur2 = await db.execute('SELECT * FROM sesiones WHERE id=?', (m['sesion_id'],))
         s = dict(await cur2.fetchone())
@@ -1097,19 +1091,106 @@ async def submit_respuesta(token: str, req: Request):
     # Accept both 'response' (legacy) and 'input' (used by responder.html)
     resp = (data.get('input') or data.get('response') or '').strip()
     if not resp:
-        raise HTTPException(400, 'Respuesta vacÃ­a')
+        raise HTTPException(400, 'Respuesta vacía')
     async with aiosqlite.connect(DB_PATH) as db:
         cur = await db.execute('SELECT id FROM miembros WHERE token=?', (token,))
         m = await cur.fetchone()
         if not m:
-            raise HTTPException(404, 'Token no vÃ¡lido')
+        ECT COUNT(*) as total, SUM(CASE WHEN estado="ok" THEN 1 ELSE 0 END) as ok FROM procesamiento WHERE sesion_id=?', (s['id'],))
+            proc = dict(await cur3.fetchone())
+            s['total_analisis']    = proc['total'] or 0
+            s['analisis_ok']       = int(proc['ok'] or 0)
+            s['problema_corto']    = (s['problema'] or '')[:120]
+            del s['bala']  # don't send full brainstorm in list
+    return {'sesiones': sesiones, 'total': len(sesiones)}
+
+
+@app.delete('/api/sesion/{sesion_id}')
+async def delete_sesion(sesion_id: str):
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute('DELETE FROM procesamiento WHERE sesion_id=?', (sesion_id,))
+        await db.execute('DELETE FROM miembros WHERE sesion_id=?', (sesion_id,))
+        await db.execute('DELETE FROM sesiones WHERE id=?', (sesion_id,))
+        await db.commit()
+    return {'status': 'ok'}
+
+
+# ── Responder (member submits) ────────────────────────────────────────────────
+
+@app.get('/api/sesion-by-token/{token}')
+async def sesion_by_token(token: str):
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        cur = await db.execute('SELECT * FROM miembros WHERE token=?', (token,))
+        m = await cur.fetchone()
+        if not m:
+            raise HTTPException(404, 'Token no válido')
+        m = dict(m)
+        cur2 = await db.execute('SELECT * FROM sesiones WHERE id=?', (m['sesion_id'],))
+        s = dict(await cur2.fetchone())
+    dna = json.loads(s.get('dna', '{}'))
+    return {
+        'member': {'name': m['nombre'], 'role': m['rol']},
+        'problem': s['problema'],
+        'context': s.get('contexto', ''),
+        'constraints': s.get('restricciones', ''),
+        'success': s.get('criterios', ''),
+        'empresa': dna.get('name', s.get('empresa', '')),
+        'facilitador': s.get('facilitador', ''),
+        'hasResponded': bool(m['respondio']),
+    }
+
+
+@app.get('/api/sesion-por-token/{token}')
+async def sesion_por_token(token: str):
+    """Endpoint used by responder.html — returns data in the format it expects."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        cur = await db.execute('SELECT * FROM miembros WHERE token=?', (token,))
+        m = await cur.fetchone()
+        if not m:
+            raise HTTPException(404, 'Token no válido')
+        m = dict(m)
+        cur2 = await db.execute('SELECT * FROM sesiones WHERE id=?', (m['sesion_id'],))
+        s = dict(await cur2.fetchone())
+    dna = json.loads(s.get('dna', '{}'))
+    return {
+        'member': {
+            'name':      m['nombre'],
+            'role':      m['rol'],
+            'completed': bool(m['respondio']),
+        },
+        'sesion': {
+            'problem':    s['problema'],
+            'context':    s.get('contexto', ''),
+            'constraints': s.get('restricciones', ''),
+            'success':    s.get('criterios', ''),
+            'brainstorm': s.get('bala') or '',
+            'empresa':    dna.get('name', s.get('empresa', '')),
+            'facilitador': s.get('facilitador', ''),
+        },
+    }
+
+
+@app.post('/api/responder/{token}')
+async def submit_respuesta(token: str, req: Request):
+    data = await req.json()
+    # Accept both 'response' (legacy) and 'input' (used by responder.html)
+    resp = (data.get('input') or data.get('response') or '').strip()
+    if not resp:
+        raise HTTPException(400, 'Respuesta vacía')
+    async with aiosqlite.connect(DB_PATH) as db:
+        cur = await db.execute('SELECT id FROM miembros WHERE token=?', (token,))
+        m = await cur.fetchone()
+        if not m:
+            raise HTTPException(404, 'Token no válido')
         await db.execute('UPDATE miembros SET respondio=1, respuesta=? WHERE token=?',
                          (resp, token))
         await db.commit()
-    return {'status': 'ok', 'message': 'Â¡Gracias! Tu perspectiva fue registrada.'}
+    return {'status': 'ok', 'message': '¡Gracias! Tu perspectiva fue registrada.'}
 
 
-# ââ WebSocket: Procesamiento en tiempo real âââââââââââââââââââââââââââââââââââ
+# ── WebSocket: Procesamiento en tiempo real ───────────────────────────────────
 
 @app.websocket('/ws/procesar/{sesion_id}')
 async def ws_procesar(websocket: WebSocket, sesion_id: str):
@@ -1125,7 +1206,7 @@ async def ws_procesar(websocket: WebSocket, sesion_id: str):
         log.info(f'WS desconectado sesion={sesion_id}')
 
 
-# ââ WebSocket: La Bala en streaming ââââââââââââââââââââââââââââââââââââââââââ
+# ── WebSocket: La Bala en streaming ──────────────────────────────────────────
 
 @app.websocket('/ws/bala/{sesion_id}')
 async def ws_bala(websocket: WebSocket, sesion_id: str):
@@ -1133,7 +1214,7 @@ async def ws_bala(websocket: WebSocket, sesion_id: str):
     try:
         sesion = await db_get_sesion(sesion_id)
         if not sesion:
-            await websocket.send_json({'type': 'bala_error', 'msg': 'SesiÃ³n no encontrada'})
+            await websocket.send_json({'type': 'bala_error', 'msg': 'Sesión no encontrada'})
             return
         asyncio.create_task(synthesize_stream(sesion, sesion_id))
         while True:
@@ -1142,7 +1223,7 @@ async def ws_bala(websocket: WebSocket, sesion_id: str):
         ws_mgr.disconnect(sesion_id, websocket)
 
 
-# ââ Test endpoints ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ── Test endpoints ────────────────────────────────────────────────────────────
 
 @app.post('/api/test-models')
 async def test_models():
@@ -1220,7 +1301,7 @@ async def test_email(req: Request):
         return {'status': 'error', 'error': str(e)[:300]}
 
 
-# ââ Save DNA (persiste en keys-side; guardado en sesiÃ³n vÃ­a crear-sesion) âââââ
+# ── Save DNA (persiste en keys-side; guardado en sesión vía crear-sesion) ────
 
 @app.post('/api/save-dna')
 async def save_dna(req: Request):
@@ -1242,7 +1323,7 @@ async def load_dna():
     return {}
 
 
-# ââ Export DOCX âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ── Export DOCX ───────────────────────────────────────────────────────────────
 
 @app.post('/api/export-docx')
 async def export_docx(req: Request):
@@ -1263,12 +1344,12 @@ async def export_docx(req: Request):
     problema = data.get('problema', '')
     fecha    = datetime.utcnow().strftime('%d/%m/%Y')
 
-    # ââ Remove DATOS_VISUALES block ââââââââââââââââââââââââââââââââââââââââââ
+    # ── Remove DATOS_VISUALES block ──────────────────────────────────────────
     idx = md_text.find('## DATOS_VISUALES')
     if idx != -1:
         md_text = md_text[:idx].rstrip()
 
-    # ââ Build document âââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+    # ── Build document ───────────────────────────────────────────────────────
     doc = Document()
 
     # Page margins
@@ -1278,7 +1359,7 @@ async def export_docx(req: Request):
         sec.left_margin   = Cm(2.8)
         sec.right_margin  = Cm(2.8)
 
-    # ââ Styles âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+    # ── Styles ───────────────────────────────────────────────────────────────
     def style_normal(para, size=11, bold=False, italic=False, color=None, space_after=6):
         para.paragraph_format.space_after  = Pt(space_after)
         para.paragraph_format.space_before = Pt(0)
@@ -1309,7 +1390,7 @@ async def export_docx(req: Request):
             else:
                 para.add_run(part)
 
-    # ââ Cover page âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+    # ── Cover page ───────────────────────────────────────────────────────────
     p = doc.add_paragraph()
     p.paragraph_format.space_before = Pt(80)
     p.paragraph_format.space_after  = Pt(8)
@@ -1320,7 +1401,7 @@ async def export_docx(req: Request):
     r.font.bold  = True
     p2 = doc.add_paragraph()
     p2.paragraph_format.space_after = Pt(4)
-    r2 = p2.add_run('Sistema Multi-IA de ConsultorÃ­a EstratÃ©gica')
+    r2 = p2.add_run('Sistema Multi-IA de Consultoría Estratégica')
     r2.font.name = 'Courier New'; r2.font.size = Pt(8); r2.font.color.rgb = RGBColor(100,100,100)
 
     p_name = doc.add_paragraph()
@@ -1338,13 +1419,13 @@ async def export_docx(req: Request):
 
     p_date = doc.add_paragraph()
     p_date.paragraph_format.space_before = Pt(32)
-    r_date = p_date.add_run(f'Advisory Brief Â· {fecha} Â· Confidencial')
+    r_date = p_date.add_run(f'Advisory Brief · {fecha} · Confidencial')
     r_date.font.name = 'Courier New'; r_date.font.size = Pt(8)
     r_date.font.color.rgb = RGBColor(150,120,50)
 
     doc.add_page_break()
 
-    # ââ Parse markdown and build document ââââââââââââââââââââââââââââââââââââ
+    # ── Parse markdown and build document ────────────────────────────────────
     lines      = md_text.split('\n')
     in_table   = False
     table_rows = []
@@ -1398,11 +1479,11 @@ async def export_docx(req: Request):
             flush_table()
 
         # Lists
-        if re.match(r'^[-*â¢]\s', line):
+        if re.match(r'^[-*•]\s', line):
             in_list = True
             p = doc.add_paragraph(style='List Bullet')
             p.paragraph_format.space_after = Pt(3)
-            add_run_inline(p, re.sub(r'^[-*â¢]\s+', '', line))
+            add_run_inline(p, re.sub(r'^[-*•]\s+', '', line))
             continue
         elif re.match(r'^\d+\.\s', line):
             in_list = True
@@ -1454,15 +1535,15 @@ async def export_docx(req: Request):
 
     flush_table()
 
-    # ââ Footer on last page âââââââââââââââââââââââââââââââââââââââââââââââââââ
+    # ── Footer on last page ───────────────────────────────────────────────────
     doc.add_paragraph()
     p_footer = doc.add_paragraph()
     p_footer.paragraph_format.space_before = Pt(24)
-    r_f = p_footer.add_run(f'Generado por REVOLVER Â· Sistema Multi-IA de ConsultorÃ­a Â· {fecha}')
+    r_f = p_footer.add_run(f'Generado por REVOLVER · Sistema Multi-IA de Consultoría · {fecha}')
     r_f.font.name = 'Courier New'; r_f.font.size = Pt(7.5)
     r_f.font.color.rgb = RGBColor(150,148,144)
 
-    # ââ Return as file ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+    # ── Return as file ────────────────────────────────────────────────────────
     buf = io.BytesIO()
     doc.save(buf)
     buf.seek(0)
@@ -1476,9 +1557,9 @@ async def export_docx(req: Request):
     )
 
 
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-# AUTH â usuarios/empresas
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ══════════════════════════════════════════════════════════════════════════════
+# AUTH — usuarios/empresas
+# ══════════════════════════════════════════════════════════════════════════════
 
 def _hash_password(password: str, salt: str = None):
     if salt is None:
@@ -1524,11 +1605,11 @@ async def _get_current_user(authorization: Optional[str] = Header(None)) -> Opti
 async def _require_user(authorization: Optional[str] = Header(None)) -> dict:
     user = await _get_current_user(authorization)
     if not user:
-        raise HTTPException(401, 'No autorizado â inicia sesiÃ³n primero')
+        raise HTTPException(401, 'No autorizado — inicia sesión primero')
     return user
 
 
-# ââ Register ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ── Register ──────────────────────────────────────────────────────────────────
 
 @app.post('/api/auth/registrar')
 async def auth_registrar(req: Request):
@@ -1542,9 +1623,9 @@ async def auth_registrar(req: Request):
     website  = (data.get('website') or '').strip()
 
     if not all([nombre, empresa, email, password]):
-        raise HTTPException(400, 'Nombre, empresa, email y contraseÃ±a son requeridos')
+        raise HTTPException(400, 'Nombre, empresa, email y contraseña son requeridos')
     if len(password) < 6:
-        raise HTTPException(400, 'La contraseÃ±a debe tener al menos 6 caracteres')
+        raise HTTPException(400, 'La contraseña debe tener al menos 6 caracteres')
 
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
@@ -1579,7 +1660,7 @@ async def auth_login(req: Request):
     password = (data.get('password') or '').strip()
 
     if not email or not password:
-        raise HTTPException(400, 'Email y contraseÃ±a requeridos')
+        raise HTTPException(400, 'Email y contraseña requeridos')
 
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
@@ -1587,10 +1668,10 @@ async def auth_login(req: Request):
         row = await cur.fetchone()
 
     if not row:
-        raise HTTPException(401, 'Email o contraseÃ±a incorrectos')
+        raise HTTPException(401, 'Email o contraseña incorrectos')
     user = dict(row)
     if not _verify_password(password, user['password_hash'], user['salt']):
-        raise HTTPException(401, 'Email o contraseÃ±a incorrectos')
+        raise HTTPException(401, 'Email o contraseña incorrectos')
 
     token = await _create_auth_token(user['id'])
     log.info(f'Login: {email}')
@@ -1649,19 +1730,19 @@ async def auth_logout(authorization: Optional[str] = Header(None)):
     return {'status': 'ok'}
 
 
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-# SESIONES AVANZADAS â clonar, estado, miembros, ngrok URL
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ══════════════════════════════════════════════════════════════════════════════
+# SESIONES AVANZADAS — clonar, estado, miembros, ngrok URL
+# ══════════════════════════════════════════════════════════════════════════════
 
 @app.post('/api/sesion/{sesion_id}/clonar')
 async def clonar_sesion(sesion_id: str, req: Request):
-    """Duplica una sesiÃ³n (problema, DNA, miembros) creando una nueva con estado borrador."""
+    """Duplica una sesión (problema, DNA, miembros) creando una nueva con estado borrador."""
     data = await req.json()
     nuevo_problema = (data.get('problema') or '').strip()
 
     s = await db_get_sesion(sesion_id)
     if not s:
-        raise HTTPException(404, 'SesiÃ³n origen no encontrada')
+        raise HTTPException(404, 'Sesión origen no encontrada')
 
     new_id = secrets.token_hex(8)
     now    = datetime.utcnow().isoformat()
@@ -1699,22 +1780,22 @@ async def clonar_sesion(sesion_id: str, req: Request):
         await db.commit()
 
     new_s = await db_get_sesion(new_id)
-    log.info(f'SesiÃ³n clonada: {sesion_id} â {new_id}')
+    log.info(f'Sesión clonada: {sesion_id} → {new_id}')
     return {'status': 'ok', 'sesionId': new_id, 'sesion': new_s}
 
 
 @app.put('/api/sesion/{sesion_id}/estado')
 async def update_estado(sesion_id: str, req: Request):
-    """Cambia el estado de la sesiÃ³n: borrador | activa | completada | archivada"""
+    """Cambia el estado de la sesión: borrador | activa | completada | archivada"""
     data   = await req.json()
     estado = (data.get('estado') or '').strip()
     valid  = {'borrador', 'activa', 'completada', 'archivada'}
     if estado not in valid:
-        raise HTTPException(400, f'Estado invÃ¡lido. VÃ¡lidos: {valid}')
+        raise HTTPException(400, f'Estado inválido. Válidos: {valid}')
     async with aiosqlite.connect(DB_PATH) as db:
         cur = await db.execute('SELECT id FROM sesiones WHERE id=?', (sesion_id,))
         if not await cur.fetchone():
-            raise HTTPException(404, 'SesiÃ³n no encontrada')
+            raise HTTPException(404, 'Sesión no encontrada')
         await db.execute('UPDATE sesiones SET estado=? WHERE id=?', (estado, sesion_id))
         await db.commit()
     return {'status': 'ok', 'estado': estado}
@@ -1722,7 +1803,7 @@ async def update_estado(sesion_id: str, req: Request):
 
 @app.post('/api/sesion/{sesion_id}/actualizar-url')
 async def actualizar_url(sesion_id: str, req: Request):
-    """Actualiza la base URL de todos los links de miembros (Ãºtil cuando cambia ngrok)."""
+    """Actualiza la base URL de todos los links de miembros (útil cuando cambia ngrok)."""
     data       = await req.json()
     public_url = (data.get('publicUrl') or '').strip().rstrip('/')
     reenviar   = bool(data.get('reenviar', False))
@@ -1738,7 +1819,7 @@ async def actualizar_url(sesion_id: str, req: Request):
         cur = await db.execute('SELECT * FROM sesiones WHERE id=?', (sesion_id,))
         sesion = await cur.fetchone()
         if not sesion:
-            raise HTTPException(404, 'SesiÃ³n no encontrada')
+            raise HTTPException(404, 'Sesión no encontrada')
         sesion = dict(sesion)
 
         cur2 = await db.execute('SELECT * FROM miembros WHERE sesion_id=?', (sesion_id,))
@@ -1769,7 +1850,7 @@ async def actualizar_url(sesion_id: str, req: Request):
 
 @app.post('/api/sesion/{sesion_id}/miembros')
 async def agregar_miembro(sesion_id: str, req: Request):
-    """Agrega un miembro nuevo a una sesiÃ³n existente."""
+    """Agrega un miembro nuevo a una sesión existente."""
     data       = await req.json()
     nombre     = (data.get('name') or data.get('nombre') or '').strip()
     rol        = (data.get('role') or data.get('rol') or 'General').strip()
@@ -1789,7 +1870,7 @@ async def agregar_miembro(sesion_id: str, req: Request):
         cur = await db.execute('SELECT * FROM sesiones WHERE id=?', (sesion_id,))
         sesion = await cur.fetchone()
         if not sesion:
-            raise HTTPException(404, 'SesiÃ³n no encontrada')
+            raise HTTPException(404, 'Sesión no encontrada')
         sesion = dict(sesion)
 
     now   = datetime.utcnow().isoformat()
@@ -1827,7 +1908,7 @@ async def agregar_miembro(sesion_id: str, req: Request):
 
 @app.delete('/api/sesion/{sesion_id}/miembros/{member_id}')
 async def eliminar_miembro(sesion_id: str, member_id: str):
-    """Elimina un miembro de una sesiÃ³n (solo si no ha respondido)."""
+    """Elimina un miembro de una sesión (solo si no ha respondido)."""
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
         cur = await db.execute(
@@ -1836,77 +1917,77 @@ async def eliminar_miembro(sesion_id: str, member_id: str):
         if not m:
             raise HTTPException(404, 'Miembro no encontrado')
         if dict(m)['respondio']:
-            raise HTTPException(400, 'No se puede eliminar un miembro que ya respondiÃ³')
+            raise HTTPException(400, 'No se puede eliminar un miembro que ya respondió')
         await db.execute('DELETE FROM miembros WHERE id=?', (member_id,))
         await db.commit()
     return {'status': 'ok'}
 
 
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-# TEMPLATES â problemas precargados por tipo
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ══════════════════════════════════════════════════════════════════════════════
+# TEMPLATES — problemas precargados por tipo
+# ══════════════════════════════════════════════════════════════════════════════
 
 # Default system templates seeded on first run
 DEFAULT_TEMPLATES = [
     {
-        'titulo': 'Crisis de ReputaciÃ³n',
+        'titulo': 'Crisis de Reputación',
         'tipo': 'crisis',
-        'descripcion': 'DaÃ±o a imagen pÃºblica por incidente externo o comunicacional',
-        'problema': 'La organizaciÃ³n enfrenta una crisis de reputaciÃ³n que amenaza su posiciÃ³n en el mercado y la confianza de sus stakeholders.',
-        'contexto': 'La situaciÃ³n escalÃ³ rÃ¡pidamente en medios y redes sociales. El equipo directivo debe actuar con rapidez y coherencia.',
-        'impacto': 'PÃ©rdida de clientes, caÃ­da en ventas, dificultad para retener talento y tensiÃ³n con reguladores.',
-        'restricciones': 'No se pueden hacer declaraciones pÃºblicas sin validaciÃ³n legal. Plazo mÃ¡ximo de respuesta: 48 horas.',
-        'criterios': 'RecuperaciÃ³n de NPS en 90 dÃ­as, cero nuevas menciones negativas virales, plan comunicacional ejecutado.',
+        'descripcion': 'Daño a imagen pública por incidente externo o comunicacional',
+        'problema': 'La organización enfrenta una crisis de reputación que amenaza su posición en el mercado y la confianza de sus stakeholders.',
+        'contexto': 'La situación escaló rápidamente en medios y redes sociales. El equipo directivo debe actuar con rapidez y coherencia.',
+        'impacto': 'Pérdida de clientes, caída en ventas, dificultad para retener talento y tensión con reguladores.',
+        'restricciones': 'No se pueden hacer declaraciones públicas sin validación legal. Plazo máximo de respuesta: 48 horas.',
+        'criterios': 'Recuperación de NPS en 90 días, cero nuevas menciones negativas virales, plan comunicacional ejecutado.',
     },
     {
-        'titulo': 'DisrupciÃ³n TecnolÃ³gica',
+        'titulo': 'Disrupción Tecnológica',
         'tipo': 'innovacion',
-        'descripcion': 'Un competidor o nueva tecnologÃ­a amenaza el modelo de negocio actual',
-        'problema': 'Una tecnologÃ­a disruptiva estÃ¡ redefiniendo el sector. La organizaciÃ³n debe decidir si adopta, adapta o defiende su posiciÃ³n actual.',
-        'contexto': 'Los competidores emergentes capturan cuota de mercado con soluciones mÃ¡s Ã¡giles y costos menores.',
-        'impacto': 'PÃ©rdida progresiva de relevancia, presiÃ³n en mÃ¡rgenes y riesgo de obsolescencia en 24â36 meses.',
-        'restricciones': 'Presupuesto de transformaciÃ³n limitado. No se pueden discontinuar lÃ­neas de negocio core sin plan de transiciÃ³n.',
-        'criterios': 'Hoja de ruta tecnolÃ³gica aprobada en 60 dÃ­as, primer MVP en 180 dÃ­as, KPIs de adopciÃ³n definidos.',
+        'descripcion': 'Un competidor o nueva tecnología amenaza el modelo de negocio actual',
+        'problema': 'Una tecnología disruptiva está redefiniendo el sector. La organización debe decidir si adopta, adapta o defiende su posición actual.',
+        'contexto': 'Los competidores emergentes capturan cuota de mercado con soluciones más ágiles y costos menores.',
+        'impacto': 'Pérdida progresiva de relevancia, presión en márgenes y riesgo de obsolescencia en 24–36 meses.',
+        'restricciones': 'Presupuesto de transformación limitado. No se pueden discontinuar líneas de negocio core sin plan de transición.',
+        'criterios': 'Hoja de ruta tecnológica aprobada en 60 días, primer MVP en 180 días, KPIs de adopción definidos.',
     },
     {
-        'titulo': 'ExpansiÃ³n a Nuevo Mercado',
+        'titulo': 'Expansión a Nuevo Mercado',
         'tipo': 'estrategia',
-        'descripcion': 'Ingreso a un mercado geogrÃ¡fico o segmento no atendido',
-        'problema': 'La organizaciÃ³n evalÃºa expandirse a un nuevo mercado con alto potencial pero con riesgos regulatorios, culturales y operacionales significativos.',
-        'contexto': 'El mercado objetivo muestra tasas de crecimiento superiores al mercado domÃ©stico pero requiere adaptaciÃ³n del modelo de negocio.',
-        'impacto': 'Potencial de incrementar ingresos en 30â50% en 3 aÃ±os, con una inversiÃ³n inicial de alto riesgo.',
+        'descripcion': 'Ingreso a un mercado geográfico o segmento no atendido',
+        'problema': 'La organización evalúa expandirse a un nuevo mercado con alto potencial pero con riesgos regulatorios, culturales y operacionales significativos.',
+        'contexto': 'El mercado objetivo muestra tasas de crecimiento superiores al mercado doméstico pero requiere adaptación del modelo de negocio.',
+        'impacto': 'Potencial de incrementar ingresos en 30–50% en 3 años, con una inversión inicial de alto riesgo.',
         'restricciones': 'Capacidad operacional actual al 85%. Equipo directivo sin experiencia en el mercado objetivo.',
-        'criterios': 'DecisiÃ³n de go/no-go en 45 dÃ­as, plan de entrada validado, socios locales identificados.',
+        'criterios': 'Decisión de go/no-go en 45 días, plan de entrada validado, socios locales identificados.',
     },
     {
-        'titulo': 'ReestructuraciÃ³n Organizacional',
+        'titulo': 'Reestructuración Organizacional',
         'tipo': 'operaciones',
-        'descripcion': 'RediseÃ±o de estructura, procesos o cultura ante cambio de contexto',
-        'problema': 'La estructura organizacional actual es un obstÃ¡culo para la velocidad de decisiÃ³n y la ejecuciÃ³n estratÃ©gica.',
-        'contexto': 'El crecimiento acelerado creÃ³ silos funcionales, duplicidad de roles y procesos lentos que afectan la competitividad.',
-        'impacto': 'Tiempo de respuesta al mercado 3x mÃ¡s lento que competidores. RotaciÃ³n del talento clave por encima del 20% anual.',
-        'restricciones': 'No se pueden hacer reducciones de dotaciÃ³n. El cambio debe ser progresivo para no afectar la operaciÃ³n.',
-        'criterios': 'Nueva estructura implementada en 120 dÃ­as, reducciÃ³n del 40% en ciclos de aprobaciÃ³n, NPS interno sobre 60.',
+        'descripcion': 'Rediseño de estructura, procesos o cultura ante cambio de contexto',
+        'problema': 'La estructura organizacional actual es un obstáculo para la velocidad de decisión y la ejecución estratégica.',
+        'contexto': 'El crecimiento acelerado creó silos funcionales, duplicidad de roles y procesos lentos que afectan la competitividad.',
+        'impacto': 'Tiempo de respuesta al mercado 3x más lento que competidores. Rotación del talento clave por Encima del 20% anual.',
+        'restricciones': 'No se pueden hacer reducciones de dotación. El cambio debe ser progresivo para no afectar la operación.',
+        'criterios': 'Nueva estructura implementada en 120 días, reducción del 40% en ciclos de aprobación, NPS interno sobre 60.',
     },
     {
-        'titulo': 'Problema Financiero CrÃ­tico',
+        'titulo': 'Problema Financiero Crítico',
         'tipo': 'finanzas',
-        'descripcion': 'PresiÃ³n de liquidez, caÃ­da de mÃ¡rgenes o deuda insostenible',
-        'problema': 'La organizaciÃ³n enfrenta una situaciÃ³n financiera crÃ­tica que requiere decisiones urgentes para asegurar la continuidad operacional.',
-        'contexto': 'CombinaciÃ³n de factores externos (mercado) e internos (costos) generaron una presiÃ³n de caja no anticipada.',
+        'descripcion': 'Presión de liquidez, caída de márgenes o deuda insostenible',
+        'problema': 'La organización enfrenta una situación financiera crítica que requiere decisiones urgentes para asegurar la continuidad operacional.',
+        'contexto': 'Combinación de factores externos (mercado) e internos (costos) generaron una presión de caja no anticipada.',
         'impacto': 'Runway de caja proyectado en menos de 6 meses si no se toman acciones inmediatas.',
         'restricciones': 'No hay apetito de los accionistas para aportes de capital adicionales. Covenant bancario en riesgo.',
-        'criterios': 'Plan de estabilizaciÃ³n financiera en 30 dÃ­as, runway extendido a 18 meses, covenant normalizado en 90 dÃ­as.',
+        'criterios': 'Plan de estabilización financiera en 30 días, runway extendido a 18 meses, covenant normalizado en 90 días.',
     },
     {
-        'titulo': 'VUCA â Incertidumbre EstratÃ©gica',
+        'titulo': 'VUCA — Incertidumbre Estratégica',
         'tipo': 'vuca',
-        'descripcion': 'Entorno volÃ¡til, incierto, complejo y ambiguo',
-        'problema': 'La organizaciÃ³n opera en un entorno VUCA donde las herramientas tradicionales de planificaciÃ³n resultan insuficientes.',
-        'contexto': 'Alta volatilidad regulatoria, macroeconÃ³mica y competitiva simultÃ¡nea que invalida los supuestos del plan estratÃ©gico.',
-        'impacto': 'Incapacidad de comprometer inversiones a mÃ¡s de 12 meses, parÃ¡lisis decisional en la alta direcciÃ³n.',
-        'restricciones': 'No se puede esperar a tener certeza completa. Las decisiones deben tomarse con informaciÃ³n parcial.',
-        'criterios': 'Marco de decisiÃ³n bajo incertidumbre adoptado, escenarios actualizados mensualmente, equipo alineado.',
+        'descripcion': 'Entorno volátil, incierto, complejo y ambiguo',
+        'problema': 'La organización opera en un entorno VUCA donde las herramientas tradicionales de planificación resultan insuficientes.',
+        'contexto': 'Alta volatilidad regulatoria, macroeconómica y competitiva simultánea que invalida los supuestos del plan estratégico.',
+        'impacto': 'Incapacidad de comprometer inversiones a más de 12 meses, parálisis decisional en la alta dirección.',
+        'restricciones': 'No se puede esperar a tener certeza completa. Las decisiones deben tomarse con información parcial.',
+        'criterios': 'Marco de decisión bajo incertidumbre adoptado, escenarios actualizados mensualmente, equipo alineado.',
     },
 ]
 
@@ -1953,7 +2034,7 @@ async def create_template(req: Request, user: dict = Depends(_require_user)):
     data = await req.json()
     titulo = (data.get('titulo') or '').strip()
     if not titulo:
-        raise HTTPException(400, 'TÃ­tulo requerido')
+        raise HTTPException(400, 'Título requerido')
     tid = secrets.token_hex(8)
     now = datetime.utcnow().isoformat()
     async with aiosqlite.connect(DB_PATH) as db:
@@ -1981,16 +2062,16 @@ async def delete_template(template_id: str, user: dict = Depends(_require_user))
     return {'status': 'ok'}
 
 
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ══════════════════════════════════════════════════════════════════════════════
 # MAIN
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ══════════════════════════════════════════════════════════════════════════════
 
 if __name__ == '__main__':
     print("""
-ââââââââââââââââââââââââââââââââââââââââââââââââ
-â   R E V O L V E R   v2   â   Backend        â
-â   FastAPI Â· WebSockets Â· SQLite Â· Async      â
-ââââââââââââââââââââââââââââââââââââââââââââââââ
+╔══════════════════════════════════════════════╗
+║   R E V O L V E R   v2   —   Backend        ║
+║   FastAPI · WebSockets · SQLite · Async      ║
+╚═════════════════════════════════════════════╝
 """)
     uvicorn.run(
         'revolver_v2:app',

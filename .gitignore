@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+.venv/
+venv/
+
+# Base de datos local
+revolver.db
+*.db-shm
+*.db-wal
+
+# Claves — NUNCA subir al repo
+keys.json
+cert.pem
+key.pem
+
+# Logs y temporales
+*.log
+*.tmp
+sesiones/
+remotion-video/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

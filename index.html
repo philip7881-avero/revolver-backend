@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REVOLVER — From human insight to synthetic intelligence.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700;900&family=Poppins:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ink:   #080809;
+  --red:   #C8102E;
+  --red2:  #a00020;
+  --paper: #FFFFFF;
+  --dim:   #888888;
+  --rule:  rgba(255,255,255,0.07);
+  --rule2: rgba(255,255,255,0.04);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--ink);
+  color: var(--paper);
+  font-family: 'Poppins', sans-serif;
+  font-weight: 300;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* grain */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ── LOGO COMPONENT ── */
+.logo-mark {
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 0.13em;
+  color: var(--paper);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: baseline;
+  white-space: nowrap;
+}
+.logo-mark .acc { color: var(--red); }
+/* last R: mirror + cancel trailing letter-spacing */
+.logo-mark .rev {
+  display: inline-block;
+  transform: scaleX(-1);
+  letter-spacing: 0;
+  margin-left: 0;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 3rem;
+  background: rgba(8,8,9,0.82);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--rule);
+  transition: background 0.3s;
+}
+nav.scrolled { background: rgba(8,8,9,0.96); }
+
+.nav-logo { font-size: 1.7rem; }
+
+.nav-cta {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--paper);
+  text-decoration: none;
+  border: 1.5px solid var(--red);
+  padding: 0.5rem 1.3rem;
+  transition: background 0.2s;
+}
+.nav-cta:hover { background: var(--red); }
+
+/* ── HERO ── */
+#hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9rem 2rem 5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 65% 55% at 50% 38%, rgba(200,16,46,0.11) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-inner {
+  max-width: 980px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 4rem;
+  align-items: center;
+}
+
+.hero-tag {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  color: var(--red);
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+}
+
+.hero-headline {
+  font-size: clamp(2rem, 4.5vw, 3.2rem);
+  font-weight: 300;
+  line-height: 1.22;
+  margin-bottom: 1.8rem;
+  letter-spacing: -0.01em;
+}
+.hero-headline em {
+  font-style: italic;
+  color: rgba(255,255,255,0.55);
+  display: block;
+}
+
+.hero-body {
+  font-size: 1rem;
+  color: rgba(255,255,255,0.55);
+  max-width: 420px;
+  line-height: 1.85;
+  margin-bottom: 2.6rem;
+}
+.hero-body strong {
+  color: var(--paper);
+  font-weight: 500;
+  font-style: italic;
+}
+
+.hero-cta {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--paper);
+  background: var(--red);
+  text-decoration: none;
+  padding: 0.85rem 2.2rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  transition: background 0.2s;
+}
+.hero-cta:hover { background: var(--red2); }
+.hero-cta-arrow { font-size: 1rem; transition: transform 0.2s; }
+.hero-cta:hover .hero-cta-arrow { transform: translateX(4px); }
+
+/* ── TAMBOR (revolver drum) ── */
+.tambor-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.tambor-svg {
+  width: 100%;
+  max-width: 380px;
+  animation: tambor-float 6s ease-in-out infinite;
+  filter: drop-shadow(0 0 40px rgba(200,16,46,0.18));
+}
+@keyframes tambor-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  30%       { transform: translateY(-8px) rotate(1.5deg); }
+  70%       { transform: translateY(-4px) rotate(-1deg); }
+}
+
+/* ── SECTIONS ── */
+section { padding: 7rem 2rem; }
+.container { max-width: 960px; margin: 0 auto; }
+
+.section-eyebrow {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.63rem;
+  font-weight: 700;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 1.2rem;
+  display: block;
+}
+
+.section-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(3rem, 6vw, 5rem);
+  letter-spacing: 0.04em;
+  line-height: 0.95;
+  margin-bottom: 1.6rem;
+}
+
+.section-lead {
+  font-size: 1.15rem;
+  font-style: italic;
+  color: rgba(255,255,255,0.65);
+  line-height: 1.7;
+  margin-bottom: 1.4rem;
+  max-width: 600px;
+}
+
+.section-body {
+  font-size: 0.97rem;
+  color: rgba(255,255,255,0.5);
+  line-height: 1.85;
+  max-width: 600px;
+}
+
+.divider { border: none; border-top: 1px solid var(--rule); }
+
+/* ── EL PROBLEMA ── */
+#problema { background: #0b0b0c; }
+
+.problema-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6rem;
+  align-items: center;
+}
+
+.problema-quote {
+  border-left: 2px solid var(--red);
+  padding: 0.4rem 0 0.4rem 1.8rem;
+}
+.problema-quote p {
+  font-size: 1.5rem;
+  font-weight: 300;
+  font-style: italic;
+  color: rgba(255,255,255,0.75);
+  line-height: 1.5;
+}
+
+.problema-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+.pstat { border-top: 1px solid var(--rule); padding-top: 1.6rem; }
+.pstat-n {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 4rem;
+  color: var(--red);
+  line-height: 1;
+}
+.pstat-d { font-size: 0.85rem; color: rgba(255,255,255,0.45); margin-top: 0.2rem; line-height: 1.5; }
+
+/* ── LA SOLUCIÓN ── */
+#solucion {}
+
+.steps {
+  margin-top: 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--rule);
+}
+
+.step-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  border-bottom: 1px solid var(--rule);
+  transition: background 0.3s;
+}
+.step-row:last-child { border-bottom: none; }
+.step-row:hover { background: rgba(200,16,46,0.035); }
+
+.step-num-col {
+  border-right: 1px solid var(--rule);
+  padding: 2.4rem 2rem;
+  display: flex;
+  align-items: flex-start;
+}
+.step-num-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 3rem;
+  color: rgba(200,16,46,0.3);
+  line-height: 1;
+}
+
+.step-content { padding: 2.4rem 2.8rem; }
+.step-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--paper);
+  margin-bottom: 0.7rem;
+}
+.step-desc { font-size: 0.95rem; color: rgba(255,255,255,0.5); line-height: 1.8; }
+.step-desc em { color: rgba(255,255,255,0.75); font-style: italic; }
+
+/* AI pills */
+.ai-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.2rem;
+}
+.ai-pill {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid rgba(200,16,46,0.4);
+  color: rgba(200,16,46,0.85);
+  background: rgba(200,16,46,0.06);
+}
+.ai-pill .role {
+  color: rgba(255,255,255,0.35);
+  font-weight: 400;
+  font-size: 0.6rem;
+  letter-spacing: 0.05em;
+  margin-left: 0.3rem;
+}
+
+/* ── POR QUÉ SEIS ── */
+#pq { background: #0b0b0c; }
+
+.pq-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5rem;
+  align-items: start;
+  margin-top: 3rem;
+}
+
+.pq-text {}
+
+.drum-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+}
+
+.drum-slot {
+  background: var(--ink);
+  padding: 1.6rem 1.4rem;
+  transition: background 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.drum-slot::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--red);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s;
+}
+.drum-slot:hover { background: rgba(200,16,46,0.04); }
+.drum-slot:hover::before { transform: scaleX(1); }
+
+.drum-slot-n {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.85rem;
+  color: var(--red);
+  letter-spacing: 0.15em;
+  margin-bottom: 0.4rem;
+}
+.drum-slot-name {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--paper);
+  margin-bottom: 0.35rem;
+}
+.drum-slot-role {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.38);
+  font-style: italic;
+  line-height: 1.5;
+}
+
+/* ── OUTPUT ── */
+#output {}
+
+.output-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5rem;
+  align-items: center;
+  margin-top: 3rem;
+}
+
+.output-doc {
+  border: 1px solid var(--rule);
+  background: #0d0d0e;
+  padding: 2.8rem 2.4rem;
+  position: relative;
+}
+.output-doc::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--red);
+}
+
+.doc-header {
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 1.2rem;
+  margin-bottom: 1.4rem;
+}
+.doc-title-label {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 0.4rem;
+}
+.doc-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.5rem;
+  letter-spacing: 0.06em;
+  color: var(--paper);
+}
+
+.doc-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--rule2);
+  font-size: 0.8rem;
+}
+.doc-row:last-child { border-bottom: none; }
+.doc-row-label { color: rgba(255,255,255,0.4); font-family: 'Montserrat', sans-serif; font-size: 0.68rem; letter-spacing: 0.06em; }
+.doc-row-val { color: var(--paper); font-weight: 400; }
+.doc-row-val.red { color: var(--red); font-family: 'Montserrat', sans-serif; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; }
+
+/* ── CTA ── */
+#cta-final {
+  background: var(--red);
+  text-align: center;
+  padding: 8rem 2rem;
+  position: relative;
+  overflow: hidden;
+}
+#cta-final::before {
+  content: 'REVOLVER';
+  position: absolute;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 24vw;
+  color: rgba(255,255,255,0.06);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  white-space: nowrap;
+  pointer-events: none;
+  letter-spacing: 0.06em;
+}
+
+.cta-inner { position: relative; z-index: 1; }
+
+.cta-sup {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.63rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 1.4rem;
+}
+
+.cta-heading {
+  font-size: clamp(2rem, 5vw, 4rem);
+  font-weight: 300;
+  font-style: italic;
+  line-height: 1.25;
+  margin-bottom: 1rem;
+}
+
+.cta-body {
+  font-size: 1rem;
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 2.8rem;
+  line-height: 1.75;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.btn-cta-final {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--red);
+  background: var(--paper);
+  text-decoration: none;
+  padding: 1rem 2.6rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  transition: background 0.2s, color 0.2s;
+}
+.btn-cta-final:hover { background: var(--ink); color: var(--paper); }
+
+/* ── FOOTER ── */
+footer {
+  background: #040405;
+  padding: 3rem 2rem;
+  border-top: 1px solid var(--rule);
+}
+.footer-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.footer-logo { font-size: 1.35rem; }
+.footer-copy {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.25);
+  font-family: 'Montserrat', sans-serif;
+  letter-spacing: 0.04em;
+}
+
+/* ── SCROLL REVEAL ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+.reveal.in { opacity: 1; transform: none; }
+.d1 { transition-delay: 0.08s; }
+.d2 { transition-delay: 0.16s; }
+.d3 { transition-delay: 0.24s; }
+.d4 { transition-delay: 0.32s; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 820px) {
+  nav { padding: 1rem 1.5rem; }
+  .hero-inner { grid-template-columns: 1fr; gap: 3rem; }
+  .tambor-wrap { order: -1; }
+  .tambor-svg { max-width: 260px; }
+  .problema-layout { grid-template-columns: 1fr; gap: 3rem; }
+  .pq-layout { grid-template-columns: 1fr; gap: 3rem; }
+  .output-layout { grid-template-columns: 1fr; gap: 3rem; }
+  .step-row { grid-template-columns: 80px 1fr; }
+  .step-num-label { font-size: 2rem; }
+}
+@media (max-width: 540px) {
+  .drum-grid { grid-template-columns: repeat(2, 1fr); }
+  .hero-headline { font-size: 1.7rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="logo-mark nav-logo">
+    <span class="acc">R</span>EVOLVE<span class="acc rev">R</span>
+  </a>
+  <a href="#" data-app-link class="nav-cta">Usar REVOLVER</a>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section id="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-inner container">
+
+    <div class="hero-text reveal">
+      <p class="hero-tag">From human insight to synthetic intelligence.</p>
+
+      <h1 class="hero-headline">
+        <em>Las mejores decisiones no las toma una persona.</em>
+        <em>Tampoco una IA.</em>
+      </h1>
+
+      <p class="hero-body">
+        REVOLVER combina el conocimiento colectivo de tu equipo con seis inteligencias artificiales que razonan de forma distinta. El resultado es algo que ninguno habría producido solo: un <strong>producto sintético</strong>, listo para decidir.
+      </p>
+
+      <a href="#" data-app-link class="hero-cta">
+        Request access
+        <span class="hero-cta-arrow">→</span>
+      </a>
+    </div>
+
+    <!-- TAMBOR -->
+    <div class="tambor-wrap reveal d2">
+      <svg class="tambor-svg" viewBox="0 0 380 380" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="drumBody" cx="42%" cy="38%" r="60%">
+            <stop offset="0%"   stop-color="#3a3a3a"/>
+            <stop offset="40%"  stop-color="#252525"/>
+            <stop offset="100%" stop-color="#111111"/>
+          </radialGradient>
+          <radialGradient id="chamberInner" cx="35%" cy="35%" r="65%">
+            <stop offset="0%"   stop-color="#1a1a1a"/>
+            <stop offset="100%" stop-color="#080809"/>
+          </radialGradient>
+          <radialGradient id="chamberHot" cx="35%" cy="35%" r="65%">
+            <stop offset="0%"   stop-color="#400010"/>
+            <stop offset="100%" stop-color="#1a0008"/>
+          </radialGradient>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="3" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="softglow">
+            <feGaussianBlur stdDeviation="6" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        <!-- outer drum body -->
+        <circle cx="190" cy="190" r="162" fill="url(#drumBody)" stroke="#333" stroke-width="1.5"/>
+
+        <!-- decorative rings -->
+        <circle cx="190" cy="190" r="155" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+        <circle cx="190" cy="190" r="140" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+        <circle cx="190" cy="190" r="100" fill="none" stroke="rgba(200,16,46,0.15)"   stroke-width="1.5"/>
+        <circle cx="190" cy="190" r="48"  fill="none" stroke="rgba(200,16,46,0.3)"    stroke-width="2"/>
+
+        <!-- center pin -->
+        <circle cx="190" cy="190" r="18"  fill="#1a1a1a" stroke="#C8102E" stroke-width="2"/>
+        <circle cx="190" cy="190" r="8"   fill="#C8102E"/>
+        <circle cx="190" cy="190" r="4"   fill="#080809"/>
+
+        <!-- 6 CHAMBERS — arranged at 60° intervals (top = 270°, then +60° each) -->
+        <!-- Chamber positions (r=118 from center 190,190):
+             0: 270° → (190, 72)
+             1: 330° → (190+118*cos330, 190+118*sin330) = (292, 131)
+             2: 30°  → (292, 249)
+             3: 90°  → (190, 308)
+             4: 150° → (88, 249)
+             5: 210° → (88, 131)
+        -->
+
+        <!-- Chamber 0 — TOP (active/hot) -->
+        <circle cx="190" cy="72"  r="32" fill="url(#chamberHot)"   stroke="#C8102E"              stroke-width="2.5" filter="url(#softglow)"/>
+        <circle cx="190" cy="72"  r="24" fill="none"               stroke="rgba(200,16,46,0.6)"  stroke-width="1.5"/>
+        <circle cx="190" cy="72"  r="14" fill="#C8102E"            opacity="0.2"/>
+        <circle cx="190" cy="72"  r="6"  fill="#C8102E"            filter="url(#glow)"/>
+
+        <!-- Chamber 1 -->
+        <circle cx="292" cy="131" r="32" fill="url(#chamberInner)" stroke="#444"                 stroke-width="1.5"/>
+        <circle cx="292" cy="131" r="24" fill="none"               stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+        <circle cx="292" cy="131" r="8"  fill="#1e1e1e"/>
+
+        <!-- Chamber 2 -->
+        <circle cx="292" cy="249" r="32" fill="url(#chamberInner)" stroke="#444"                 stroke-width="1.5"/>
+        <circle cx="292" cy="249" r="24" fill="none"               stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+        <circle cx="292" cy="249" r="8"  fill="#1e1e1e"/>
+
+        <!-- Chamber 3 -->
+        <circle cx="190" cy="308" r="32" fill="url(#chamberInner)" stroke="#444"                 stroke-width="1.5"/>
+        <circle cx="190" cy="308" r="24" fill="none"               stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+        <circle cx="190" cy="308" r="8"  fill="#1e1e1e"/>
+
+        <!-- Chamber 4 -->
+        <circle cx="88"  cy="249" r="32" fill="url(#chamberInner)" stroke="#444"                 stroke-width="1.5"/>
+        <circle cx="88"  cy="249" r="24" fill="none"               stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+        <circle cx="88"  cy="249" r="8"  fill="#1e1e1e"/>
+
+        <!-- Chamber 5 -->
+        <circle cx="88"  cy="131" r="32" fill="url(#chamberInner)" stroke="#444"                 stroke-width="1.5"/>
+        <circle cx="88"  cy="131" r="24" fill="none"               stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+        <circle cx="88"  cy="131" r="8"  fill="#1e1e1e"/>
+
+        <!-- Ejector rod slots (thin lines from center to each chamber) -->
+        <line x1="190" y1="172" x2="190" y2="104" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+        <line x1="190" y1="208" x2="190" y2="276" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+        <line x1="172" y1="179" x2="116" y2="147" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+        <line x1="208" y1="201" x2="264" y2="233" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+        <line x1="172" y1="201" x2="116" y2="233" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+        <line x1="208" y1="179" x2="264" y2="147" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+
+        <!-- outer shine -->
+        <path d="M 80 120 A 162 162 0 0 1 300 80" stroke="rgba(255,255,255,0.07)" stroke-width="3" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ══ EL PROBLEMA ══ -->
+<section id="problema">
+  <div class="container">
+    <div class="problema-layout">
+      <div class="reveal">
+        <span class="section-eyebrow">El problema</span>
+        <div class="problema-quote">
+          <p>Tu empresa enfrenta decisiones complejas todos los días.</p>
+        </div>
+        <br>
+        <p class="section-body" style="max-width:380px;">
+          Una sola perspectiva no es suficiente. Un solo modelo de IA tampoco. El error más común no es falta de información — es falta de ángulos.
+        </p>
+      </div>
+      <div class="problema-stats reveal d2">
+        <div class="pstat">
+          <div class="pstat-n">6×</div>
+          <div class="pstat-d">más ángulos de análisis que cualquier consultor o IA individual</div>
+        </div>
+        <div class="pstat">
+          <div class="pstat-n">1</div>
+          <div class="pstat-d">producto sintético, construido desde la diversidad humana y artificial simultáneamente</div>
+        </div>
+        <div class="pstat">
+          <div class="pstat-n">∞</div>
+          <div class="pstat-d">decisiones que ninguno habría producido solo</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ══ LA SOLUCIÓN ══ -->
+<section id="solucion">
+  <div class="container">
+    <div class="reveal">
+      <span class="section-eyebrow">La solución</span>
+      <h2 class="section-title">REVOLVER procesa<br>tu problema en cuatro pasos</h2>
+    </div>
+
+    <div class="steps reveal d1">
+      <div class="step-row">
+        <div class="step-num-col">
+          <span class="step-num-label">01</span>
+        </div>
+        <div class="step-content">
+          <div class="step-title">El problema entra a sesión.</div>
+          <p class="step-desc">El administrador convoca una reunión de equipo alrededor del problema. Todos participan — cada integrante lo lee, lo discute y lo interpreta desde su rol. De esa sesión colectiva emerge el <em>brief</em>: el problema definido, acotado y compartido.</p>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-num-col">
+          <span class="step-num-label">02</span>
+        </div>
+        <div class="step-content">
+          <div class="step-title">Tu equipo aporta.</div>
+          <p class="step-desc">Con el brief en mano, cada persona responde individualmente desde su experiencia y contexto. <em>Sin filtros. Sin jerarquías.</em> El sistema integra todas las voces antes de procesar.</p>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-num-col">
+          <span class="step-num-label">03</span>
+        </div>
+        <div class="step-content">
+          <div class="step-title">Seis IAs procesan.</div>
+          <p class="step-desc">Cada modelo razona distinto.</p>
+          <div class="ai-pills">
+            <span class="ai-pill">Claude <span class="role">analiza</span></span>
+            <span class="ai-pill">Grok <span class="role">cuestiona</span></span>
+            <span class="ai-pill">Gemini <span class="role">conecta</span></span>
+            <span class="ai-pill">DeepSeek <span class="role">profundiza</span></span>
+            <span class="ai-pill">GPT <span class="role">estructura</span></span>
+            <span class="ai-pill">Llama <span class="role">ejecuta</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-num-col">
+          <span class="step-num-label">04</span>
+        </div>
+        <div class="step-content">
+          <div class="step-title">Un producto sintético emerge.</div>
+          <p class="step-desc">No es un resumen. No es una votación. Es una síntesis nueva — <em>construida desde la diversidad humana y artificial simultáneamente.</em></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ══ POR QUÉ SEIS ── -->
+<section id="pq">
+  <div class="container">
+    <div class="reveal">
+      <span class="section-eyebrow">Por qué seis IAs</span>
+      <h2 class="section-title">Una sola IA tiene<br>un solo punto de vista.</h2>
+    </div>
+    <div class="pq-layout">
+      <div class="reveal d1">
+        <p class="section-lead">Los modelos de inteligencia artificial no piensan igual.</p>
+        <p class="section-body">
+          Tienen distintos entrenamientos, distintas fortalezas, distintos sesgos. Usar solo uno es como contratar a un solo consultor y llamarlo consenso.<br><br>
+          REVOLVER usa seis en paralelo. Porque la diversidad artificial importa tanto como la humana.
+        </p>
+      </div>
+      <div class="drum-grid reveal d2">
+        <div class="drum-slot">
+          <div class="drum-slot-n">01</div>
+          <div class="drum-slot-name">Claude</div>
+          <div class="drum-slot-role">Analiza con profundidad y matiz</div>
+        </div>
+        <div class="drum-slot">
+          <div class="drum-slot-n">02</div>
+          <div class="drum-slot-name">Grok</div>
+          <div class="drum-slot-role">Cuestiona supuestos y desafía</div>
+        </div>
+        <div class="drum-slot">
+          <div class="drum-slot-n">03</div>
+          <div class="drum-slot-name">Gemini</div>
+          <div class="drum-slot-role">Conecta patrones y contextos</div>
+        </div>
+        <div class="drum-slot">
+          <div class="drum-slot-n">04</div>
+          <div class="drum-slot-name">DeepSeek</div>
+          <div class="drum-slot-role">Profundiza en datos y evidencia</div>
+        </div>
+        <div class="drum-slot">
+          <div class="drum-slot-n">05</div>
+          <div class="drum-slot-name">GPT</div>
+          <div class="drum-slot-role">Estructura y comunica con claridad</div>
+        </div>
+        <div class="drum-slot">
+          <div class="drum-slot-n">06</div>
+          <div class="drum-slot-name">Llama</div>
+          <div class="drum-slot-role">Ejecuta con eficiencia práctica</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ══ EL OUTPUT ══ -->
+<section id="output">
+  <div class="container">
+    <div class="reveal">
+      <span class="section-eyebrow">El output</span>
+      <h2 class="section-title">Synthetic output.<br>Real decisions.</h2>
+    </div>
+    <div class="output-layout">
+      <div class="reveal d1">
+        <p class="section-lead">Al final de cada sesión REVOLVER obtienes un documento sintético.</p>
+        <p class="section-body">
+          Integra todas las perspectivas — humanas y artificiales — en recomendaciones concretas, fundamentadas y accionables.<br><br>
+          No es opinión. Es inteligencia colectiva procesada.
+        </p>
+      </div>
+      <div class="output-doc reveal d2">
+        <div class="doc-header">
+          <div class="doc-title-label">REVOLVER / Synthetic Document</div>
+          <div class="doc-title">SESIÓN #&nbsp;—&nbsp;RESULTADO FINAL</div>
+        </div>
+        <div class="doc-row">
+          <span class="doc-row-label">Perspectivas humanas</span>
+          <span class="doc-row-val">Integradas</span>
+        </div>
+        <div class="doc-row">
+          <span class="doc-row-label">Análisis IA</span>
+          <span class="doc-row-val">6 / 6 procesados</span>
+        </div>
+        <div class="doc-row">
+          <span class="doc-row-label">Síntesis</span>
+          <span class="doc-row-val">Generada</span>
+        </div>
+        <div class="doc-row">
+          <span class="doc-row-label">Recomendaciones</span>
+          <span class="doc-row-val">Accionables</span>
+        </div>
+        <div class="doc-row">
+          <span class="doc-row-label">Estado</span>
+          <span class="doc-row-val red">● LISTO PARA DECIDIR</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CTA FINAL ══ -->
+<section id="cta-final">
+  <div class="cta-inner reveal">
+    <p class="cta-sup">Acceso anticipado</p>
+    <h2 class="cta-heading">¿Listo para tomar<br>mejores decisiones?</h2>
+    <p class="cta-body">
+      REVOLVER está en acceso anticipado para equipos que quieren resolver problemas de forma distinta.
+    </p>
+    <a href="mailto:philip7881@gmail.com" class="btn-cta-final">
+      Solicitar demo
+      <span>→</span>
+    </a>
+  </div>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div class="footer-inner">
+    <a href="#" class="logo-mark footer-logo">
+      <span class="acc">R</span>EVOLVE<span class="acc rev">R</span>
+    </a>
+    <span class="footer-copy">© 2026 REVOLVER · Asesorías Empresariales</span>
+  </div>
+</footer>
+
+<script>
+// ── CONFIG ── Actualiza esta URL con tu dominio de Railway después de desplegar
+const REVOLVER_APP_URL = window.REVOLVER_APP_URL || 'https://revolver.up.railway.app';
+
+// Rewrite all app links dynamically
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('[data-app-link]').forEach(el => {
+    el.href = REVOLVER_APP_URL;
+  });
+});
+
+// Scroll reveal
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+// Nav scroll class
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 50);
+}, { passive: true });
+
+// Smooth anchors
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const id = a.getAttribute('href');
+    if (id === '#') return;
+    const el = document.querySelector(id);
+    if (el) { e.preventDefault(); el.scrollIntoView({ behavior: 'smooth' }); }
+  });
+});
+</script>
+</body>
+</html>

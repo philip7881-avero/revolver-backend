@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>REVOLVER — Tu perspectiva</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700;800&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --red:     #C8102E;
+      --paper:   #FFFFFF;
+      --dim:     #666666;
+      --mid:     #444444;
+      --rule:    #2a2a2a;
+      --card:    #1A1A1A;
+      --surface: #111111;
+      --green:   #50c878;
+      --warn:    #e07030;
+      --crit:    #e03030;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--surface);
+      color: var(--paper);
+      font-family: 'Poppins', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 2rem; border-bottom: 1px solid var(--rule);
+    }
+    .logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 0.1em; color: var(--paper); }
+    .header-badge { font-family: 'Montserrat', sans-serif; font-size: 0.5rem; letter-spacing: 0.25em; color: var(--dim); text-transform: uppercase; }
+
+    /* ── STATES ── */
+    .state { text-align: center; padding: 5rem 2rem; display: none; }
+    .state.active { display: block; }
+    .state-icon { font-size: 3rem; margin-bottom: 1.5rem; }
+    .state-title { font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; letter-spacing: 0.05em; color: var(--paper); margin-bottom: 0.8rem; }
+    .state-body { font-size: 0.95rem; color: var(--dim); line-height: 1.7; }
+    .spinner { width: 28px; height: 28px; border: 2px solid rgba(200,16,46,0.2); border-top-color: var(--red); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1.5rem; }
+
+    /* ── MAIN ── */
+    .main { flex: 1; max-width: 700px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; width: 100%; }
+    .form-wrap { display: none; }
+    .form-wrap.active { display: block; }
+
+    /* Greeting */
+    .greeting-label { font-family: 'Montserrat', sans-serif; font-size: 0.5rem; letter-spacing: 0.3em; color: var(--red); text-transform: uppercase; margin-bottom: 0.5rem; }
+    .greeting-name { font-family: 'Bebas Neue', sans-serif; font-size: 2.8rem; letter-spacing: 0.03em; color: var(--paper); line-height: 1; margin-bottom: 0.3rem; }
+    .greeting-role { font-size: 0.8rem; color: var(--dim); margin-bottom: 2rem; }
+
+    /* Blocks */
+    .block { background: var(--card); border: 1px solid var(--rule); border-radius: 2px; padding: 1.2rem 1.4rem; margin-bottom: 1rem; }
+    .block-label { font-family: 'Montserrat', sans-serif; font-size: 0.45rem; letter-spacing: 0.25em; color: var(--dim); text-transform: uppercase; margin-bottom: 0.6rem; }
+    .block-text { font-size: 0.88rem; line-height: 1.75; color: var(--dim); }
+    .block-text strong { color: var(--paper); font-weight: 500; }
+
+    .toggle-btn { background: none; border: 1px solid var(--rule); color: var(--dim); font-family: 'Montserrat', sans-serif; font-size: 0.48rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.5rem 1rem; cursor: pointer; border-radius: 2px; transition: all 0.2s; margin-bottom: 1rem; display: inline-block; }
+    .toggle-btn:hover { color: var(--paper); border-color: var(--mid); }
+    .brainstorm-content { display: none; background: var(--card); border: 1px solid var(--rule); border-radius: 2px; padding: 1.2rem 1.4rem; margin-bottom: 1rem; font-size: 0.83rem; line-height: 1.8; color: var(--dim); white-space: pre-wrap; max-height: 300px; overflow-y: auto; }
+    .brainstorm-content.open { display: block; }
+
+    /* Divider */
+    .section-divider { display: flex; align-items: center; gap: 1rem; margin: 1.8rem 0 1.4rem; }
+    .section-divider-line { flex: 1; height: 1px; background: var(--rule); }
+    .section-divider-label { font-family: 'Montserrat', sans-serif; font-size: 0.48rem; letter-spacing: 0.25em; color: var(--dim); text-transform: uppercase; white-space: nowrap; }
+
+    /* ═══ VOICE RECORDER ═══ */
+    .recorder-wrap { background: var(--card); border: 1px solid var(--rule); border-radius: 2px; padding: 1.4rem; margin-bottom: 1rem; }
+
+    /* Timer */
+    .timer-display {
+      display: flex; align-items: center; justify-content: center; gap: 1.2rem;
+      margin-bottom: 1.2rem;
+    }
+    .timer-digits {
+      font-family: 'Montserrat', sans-serif; font-size: 2.8rem; font-weight: 700;
+      color: var(--green); letter-spacing: 0.05em; transition: color 0.5s;
+      line-height: 1;
+    }
+    .timer-digits.warn  { color: var(--warn); }
+    .timer-digits.crit  { color: var(--red); animation: timerPulse 0.8s ease infinite; }
+    .timer-label { font-family: 'Montserrat', sans-serif; font-size: 0.42rem; letter-spacing: 0.2em; color: var(--dim); text-transform: uppercase; text-align: center; margin-bottom: 0.2rem; }
+    @keyframes timerPulse { 0%,100%{ opacity:1; } 50%{ opacity:0.5; } }
+
+    /* Progress bar */
+    .timer-bar-wrap { height: 3px; background: var(--rule); border-radius: 2px; margin-bottom: 1.4rem; overflow: hidden; }
+    .timer-bar { height: 100%; background: var(--green); border-radius: 2px; transition: width 1s linear, background 0.5s; width: 100%; }
+
+    /* Rec button */
+    .rec-center { display: flex; flex-direction: column; align-items: center; gap: 0.8rem; }
+    .rec-btn {
+      width: 64px; height: 64px; border-radius: 50%; border: 2px solid var(--mid);
+      background: var(--surface); cursor: pointer; display: flex; align-items: center;
+      justify-content: center; transition: all 0.2s; position: relative;
+    }
+    .rec-btn:hover { border-color: var(--red); }
+    .rec-btn.recording { border-color: var(--red); background: rgba(224,85,85,0.08); animation: recPulse 1.5s ease infinite; }
+    .rec-dot { width: 20px; height: 20px; border-radius: 50%; background: var(--red); transition: all 0.2s; }
+    .rec-btn.idle .rec-dot { background: var(--dim); border-radius: 4px; }
+    .rec-btn:not(.recording):not(.idle) .rec-dot { background: var(--red); }
+    @keyframes recPulse { 0%,100%{ box-shadow:0 0 0 0 rgba(224,85,85,0.4); } 50%{ box-shadow:0 0 0 12px rgba(224,85,85,0); } }
+
+    .rec-status { font-family: 'Montserrat', sans-serif; font-size: 0.48rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--dim); text-align: center; min-height: 1.4em; }
+    .rec-status.live { color: var(--red); }
+    .rec-status.warn { color: var(--warn); }
+
+    /* Live transcript preview */
+    .live-preview {
+      margin-top: 0.8rem; min-height: 48px; padding: 0.8rem 1rem;
+      background: var(--surface); border: 1px solid var(--rule); border-radius: 2px;
+      font-size: 0.78rem; color: var(--dim); line-height: 1.6; font-style: italic;
+      display: none;
+    }
+    .live-preview.active { display: block; }
+    .live-cursor { display: inline-block; width: 2px; height: 0.9em; background: var(--red); animation: blink 1s step-end infinite; vertical-align: text-bottom; }
+    @keyframes blink { 0%,100%{ opacity:1; } 50%{ opacity:0; } }
+
+    /* Hint pills */
+    .guidance { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem; }
+    .pill { font-size: 0.7rem; color: var(--dim); border: 1px solid var(--rule); border-radius: 20px; padding: 0.3rem 0.8rem; cursor: pointer; transition: all 0.2s; font-family: 'Montserrat', sans-serif; }
+    .pill:hover { color: var(--red); border-color: var(--red); }
+
+    /* ═══ TEXTAREA ═══ */
+    .input-label { font-family: 'Montserrat', sans-serif; font-size: 0.48rem; letter-spacing: 0.2em; color: var(--paper); text-transform: uppercase; display: block; margin-bottom: 0.7rem; }
+    .input-hint { font-size: 0.78rem; color: var(--dim); line-height: 1.6; margin-bottom: 0.9rem; }
+    textarea {
+      width: 100%; min-height: 240px; background: var(--card);
+      border: 1px solid var(--rule); border-radius: 2px; color: var(--paper);
+      font-family: 'Poppins', sans-serif; font-size: 0.88rem; font-weight: 300;
+      line-height: 1.85; padding: 1rem 1.2rem; resize: none; outline: none;
+      transition: border-color 0.2s; overflow-y: hidden;
+    }
+    textarea:focus { border-color: var(--red); }
+    textarea::placeholder { color: var(--mid); }
+    .char-count {
+      font-family: 'Montserrat', sans-serif; font-size: 0.42rem; letter-spacing: 0.1em;
+      color: var(--dim); text-align: right; margin-top: 0.4rem; margin-bottom: 1.2rem;
+      display: flex; justify-content: space-between;
+    }
+    .word-ref { color: var(--mid); }
+
+    /* ═══ FILE UPLOAD ═══ */
+    .upload-zone {
+      border: 1px dashed var(--mid); border-radius: 2px; padding: 1.4rem;
+      text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 1rem;
+      background: var(--card);
+    }
+    .upload-zone:hover, .upload-zone.drag { border-color: var(--red); background: rgba(200,16,46,0.03); }
+    .upload-icon { font-size: 1.6rem; margin-bottom: 0.5rem; color: var(--dim); }
+    .upload-title { font-size: 0.82rem; color: var(--paper); margin-bottom: 0.3rem; }
+    .upload-hint { font-family: 'Montserrat', sans-serif; font-size: 0.42rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mid); }
+    #fileInput { display: none; }
+
+    .file-list { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
+    .file-item {
+      display: flex; align-items: center; gap: 0.8rem;
+      background: var(--card); border: 1px solid var(--rule); border-radius: 2px; padding: 0.7rem 1rem;
+    }
+    .file-icon { font-size: 1.2rem; flex-shrink: 0; }
+    .file-info { flex: 1; min-width: 0; }
+    .file-name { font-size: 0.8rem; color: var(--paper); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .file-meta { font-family: 'Montserrat', sans-serif; font-size: 0.42rem; letter-spacing: 0.1em; color: var(--dim); text-transform: uppercase; margin-top: 0.2rem; }
+    .file-remove { background: none; border: none; color: var(--mid); cursor: pointer; font-size: 1rem; padding: 0.2rem; transition: color 0.2s; }
+    .file-remove:hover { color: var(--red); }
+    .file-status { font-family: 'Montserrat', sans-serif; font-size: 0.4rem; letter-spacing: 0.1em; text-transform: uppercase; }
+    .file-status.ok  { color: var(--green); }
+    .file-status.err { color: var(--red); }
+    .file-status.loading { color: var(--red); animation: timerPulse 1s ease infinite; }
+
+    /* ═══ SUBMIT ═══ */
+    .btn-submit {
+      width: 100%; background: var(--red); color: #FFFFFF; border: none;
+      font-family: 'Montserrat', sans-serif; font-size: 0.6rem; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase; padding: 1.1rem 2rem;
+      cursor: pointer; border-radius: 2px; transition: opacity 0.2s; margin-top: 0.5rem;
+    }
+    .btn-submit:hover { opacity: 0.85; }
+    .btn-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+    .privacy-note { font-size: 0.72rem; color: var(--mid); text-align: center; margin-top: 0.8rem; line-height: 1.5; }
+
+    /* Done */
+    #stateDone .state-title { color: var(--green); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
+      background: var(--card); border: 1px solid var(--rule); border-radius: 3px;
+      padding: 0.8rem 1.5rem; font-family: 'Montserrat', sans-serif; font-size: 0.5rem;
+      letter-spacing: 0.15em; text-transform: uppercase; color: var(--paper);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5); z-index: 100;
+      opacity: 0; transition: opacity 0.3s; pointer-events: none;
+    }
+    .toast.show { opacity: 1; }
+    .toast.warn { border-color: var(--warn); color: var(--warn); }
+    .toast.crit { border-color: var(--red); color: var(--red); }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="logo">REVOLVER</div>
+    <div class="header-badge">Tu perspectiva</div>
+  </header>
+
+  <div class="state active" id="stateLoading"><div class="spinner"></div><div class="state-title">Cargando...</div></div>
+  <div class="state" id="stateError"><div class="state-icon">⚠</div><div class="state-title">Link inválido</div><div class="state-body">Este link no existe o ya expiró.<br>Contacta a quien te lo envió.</div></div>
+  <div class="state" id="stateAlready"><div class="state-icon">✓</div><div class="state-title" style="color:var(--green);">Ya enviaste tu perspectiva</div><div class="state-body">Tu análisis fue registrado.<br>El facilitador lanzará el procesamiento cuando el equipo completo haya respondido.</div></div>
+  <div class="state" id="stateDone"><div class="state-icon">🎯</div><div class="state-title">Perspectiva enviada</div><div class="state-body">Tu análisis fue registrado correctamente.<br><br>Cuando todo el equipo responda, REVOLVER procesará los resultados con 6 modelos de IA y generará La Bala — la recomendación ejecutiva final.<br><br><span style="color:var(--dim);">Puedes cerrar esta pestaña.</span></div></div>
+
+  <main class="main">
+    <div class="form-wrap" id="formWrap">
+
+      <div class="greeting-label">Tu turno</div>
+      <div class="greeting-name" id="memberName">—</div>
+      <div class="greeting-role" id="memberRole"></div>
+
+      <!-- Problema -->
+      <div class="block">
+        <div class="block-label">El problema a resolver</div>
+        <div class="block-text" id="problemText">—</div>
+      </div>
+
+      <!-- Contexto -->
+      <div class="block" id="contextBlock" style="display:none;">
+        <div class="block-label">Contexto adicional</div>
+        <div class="block-text" id="contextText"></div>
+      </div>
+
+      <!-- Brainstorm -->
+      <div id="brainstormWrap" style="display:none;">
+        <button class="toggle-btn" onclick="toggleBrainstorm()">▸ Ver brainstorming del equipo</button>
+        <div class="brainstorm-content" id="brainstormContent"></div>
+      </div>
+
+      <!-- ─── SECCIÓN: GRABACIÓN ─── -->
+      <div class="section-divider">
+        <div class="section-divider-line"></div>
+        <div class="section-divider-label">Tu análisis</div>
+        <div class="section-divider-line"></div>
+      </div>
+
+      <div class="recorder-wrap" id="recorderWrap">
+        <div class="timer-label" id="timerLabel">Tiempo de grabación disponible</div>
+        <div class="timer-display">
+          <div class="timer-digits" id="timerDigits">10:00</div>
+        </div>
+        <div class="timer-bar-wrap"><div class="timer-bar" id="timerBar"></div></div>
+
+        <div class="rec-center">
+          <button class="rec-btn idle" id="recBtn" onclick="toggleRec()" title="Grabar / Pausar">
+            <div class="rec-dot"></div>
+          </button>
+          <div class="rec-status" id="recStatus">Presiona para comenzar a grabar</div>
+        </div>
+        <div class="live-preview" id="livePreview">
+          <span id="liveText"></span><span class="live-cursor"></span>
+        </div>
+      </div>
+
+      <!-- Pistas rápidas -->
+      <div class="guidance">
+        <span class="pill" onclick="insertGuide('La raíz del problema es...')">Raíz del problema</span>
+        <span class="pill" onclick="insertGuide('La acción de mayor impacto sería...')">Acción clave</span>
+        <span class="pill" onclick="insertGuide('El principal riesgo que veo es...')">Riesgo principal</span>
+        <span class="pill" onclick="insertGuide('Desde mi área, recomendaría...')">Mi recomendación</span>
+        <span class="pill" onclick="insertGuide('Una perspectiva que no se ha considerado es...')">Perspectiva nueva</span>
+      </div>
+
+      <!-- Textarea editable -->
+      <label class="input-label" for="inputArea">Texto de tu análisis</label>
+      <p class="input-hint">La grabación se transcribe aquí automáticamente. También puedes escribir directamente — sin límite de extensión. Una transcripción de 10 minutos equivale a unas <strong style="color:var(--paper);">1.500–2.000 palabras</strong>: escribe todo lo que necesites.</p>
+      <textarea id="inputArea"
+        placeholder="Habla o escribe tu análisis completo aquí.&#10;&#10;No te limites — comparte tu visión del problema, los datos que manejas, los riesgos que ves y la acción concreta que recomendarías. Cuanto más contexto, mejor será el procesamiento de las 6 IAs."
+        oninput="autoGrow(this);updateCount()"></textarea>
+      <div class="char-count">
+        <span class="word-ref">10 min audio ≈ 1.500 palabras</span>
+        <span><span id="wordCount">0</span> palabras · <span id="charCount">0</span> caracteres</span>
+      </div>
+
+      <!-- ─── SECCIÓN: DOCUMENTOS ─── -->
+      <div class="section-divider">
+        <div class="section-divider-line"></div>
+        <div class="section-divider-label">Documentos de contexto (opcional)</div>
+        <div class="section-divider-line"></div>
+      </div>
+
+      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()"
+        ondragover="e=>{e.preventDefault();this.classList.add('drag')}"
+        ondragleave="this.classList.remove('drag')"
+        ondrop="handleDrop(event)">
+        <div class="upload-icon">📎</div>
+        <div class="upload-title">Arrastra archivos o haz clic para seleccionar</div>
+        <div class="upload-hint">PDF · Word (.docx) · Excel (.xlsx) · Texto (.txt) · CSV · Máx 10MB</div>
+      </div>
+      <input type="file" id="fileInput" multiple accept=".pdf,.docx,.doc,.xlsx,.xls,.txt,.md,.csv" onchange="handleFiles(this.files)">
+      <div class="file-list" id="fileList"></div>
+
+      <!-- Submit -->
+      <button class="btn-submit" id="btnSubmit" onclick="submitRespuesta()">
+        Enviar mi perspectiva →
+      </button>
+      <p class="privacy-note">Tu respuesta es personal. Los demás miembros no pueden ver tu análisis individual hasta que el facilitador lo procese.</p>
+
+    </div>
+  </main>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const token = location.pathname.split('/').pop();
+    const API   = location.origin;
+    const MAX_REC_SECONDS = 600; // 10 minutos
+
+    let sesionData = null, memberData = null;
+    let recSeconds = 0, recRunning = false;
+    let recInterval = null, recognition = null;
+    let uploadedFiles = []; // [{name, size, text, status}]
+
+    // ── INIT ──────────────────────────────────────────────────
+    async function init() {
+      try {
+        const resp = await fetch(`${API}/api/sesion-por-token/${token}`);
+        if (!resp.ok) throw new Error('not found');
+        const data = await resp.json();
+        sesionData = data.sesion;
+        memberData = data.member;
+
+        if (memberData.completed) { showState('stateAlready'); return; }
+
+        document.getElementById('memberName').textContent = memberData.name;
+        document.getElementById('memberRole').textContent = memberData.role || '';
+        document.getElementById('problemText').innerHTML  = escHtml(sesionData.problem);
+        if (sesionData.context) {
+          document.getElementById('contextText').innerHTML = escHtml(sesionData.context);
+          document.getElementById('contextBlock').style.display = 'block';
+        }
+        if (sesionData.brainstorm) {
+          document.getElementById('brainstormContent').textContent = sesionData.brainstorm;
+          document.getElementById('brainstormWrap').style.display  = 'block';
+        }
+
+        showState(null);
+        document.getElementById('formWrap').classList.add('active');
+        updateTimerDisplay(MAX_REC_SECONDS);
+
+      } catch(e) { showState('stateError'); }
+    }
+
+    function showState(id) {
+      document.querySelectorAll('.state').forEach(el => el.classList.remove('active'));
+      if (id) document.getElementById(id)?.classList.add('active');
+    }
+
+    function toggleBrainstorm() {
+      const el = document.getElementById('brainstormContent');
+      const open = el.classList.toggle('open');
+      document.querySelector('.toggle-btn').textContent = open ? '▾ Ocultar brainstorming' : '▸ Ver brainstorming del equipo';
+    }
+
+    // ── TIMER ─────────────────────────────────────────────────
+    function updateTimerDisplay(remaining) {
+      const m = Math.floor(remaining / 60).toString().padStart(2, '0');
+      const s = (remaining % 60).toString().padStart(2, '0');
+      const el = document.getElementById('timerDigits');
+      el.textContent = `${m}:${s}`;
+
+      const pct = (remaining / MAX_REC_SECONDS) * 100;
+      const bar = document.getElementById('timerBar');
+      bar.style.width = pct + '%';
+
+      el.classList.remove('warn', 'crit');
+      bar.style.background = 'var(--green)';
+      if (remaining <= 30) {
+        el.classList.add('crit');
+        bar.style.background = 'var(--red)';
+      } else if (remaining <= 120) {
+        el.classList.add('warn');
+        bar.style.background = 'var(--warn)';
+      }
+    }
+
+    // ── VOICE RECORDING ───────────────────────────────────────
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const hasRec    = !!SpeechRec;
+
+    if (!hasRec) {
+      document.getElementById('recorderWrap').style.display = 'none';
+    }
+
+    function toggleRec() {
+      if (!hasRec) return;
+      if (recRunning) { stopRec(); }
+      else { startRec(); }
+    }
+
+    function startRec() {
+      if (recSeconds >= MAX_REC_SECONDS) {
+        toast('Tiempo de grabación agotado', 'warn'); return;
+      }
+      recRunning = true;
+      updateRecUI(true);
+      startRecognition();
+      recInterval = setInterval(() => {
+        recSeconds++;
+        const remaining = MAX_REC_SECONDS - recSeconds;
+        updateTimerDisplay(remaining);
+
+        if (remaining === 120) toast('⚠ Te quedan 2 minutos de grabación', 'warn');
+        if (remaining === 30)  toast('🔴 ¡30 segundos! Tu grabación termina pronto', 'crit');
+        if (remaining <= 0) {
+          stopRec();
+          toast('Grabación finalizada. Revisa y envía tu análisis.', '');
+        }
+      }, 1000);
+    }
+
+    function stopRec() {
+      recRunning = false;
+      clearInterval(recInterval);
+      if (recognition) { try { recognition.stop(); } catch(e){} }
+      updateRecUI(false);
+    }
+
+    function updateRecUI(active) {
+      const btn    = document.getElementById('recBtn');
+      const status = document.getElementById('recStatus');
+      const label  = document.getElementById('timerLabel');
+      const prev   = document.getElementById('livePreview');
+
+      btn.className = 'rec-btn ' + (active ? 'recording' : 'idle');
+      status.className  = 'rec-status ' + (active ? 'live' : '');
+      status.textContent = active ? '● Grabando — habla con naturalidad' : 'Presiona para continuar grabando';
+      label.textContent  = active ? 'Tiempo restante' : 'Tiempo de grabación disponible';
+      prev.classList.toggle('active', active);
+    }
+
+    function startRecognition() {
+      if (!SpeechRec) return;
+      recognition = new SpeechRec();
+      recognition.lang = 'es-CL';
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+
+      let interim = '';
+
+      recognition.onresult = (e) => {
+        interim = '';
+        let final = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          if (e.results[i].isFinal) {
+            final += e.results[i][0].transcript + ' ';
+          } else {
+            interim += e.results[i][0].transcript;
+          }
+        }
+        if (final) {
+          const ta = document.getElementById('inputArea');
+          ta.value += final;
+          autoGrow(ta);
+          updateCount();
+        }
+        document.getElementById('liveText').textContent = interim;
+      };
+
+      recognition.onend = () => {
+        // Auto-reiniciar mientras sigue el timer activo (evita corte por pausa)
+        if (recRunning && recSeconds < MAX_REC_SECONDS) {
+          setTimeout(() => {
+            if (recRunning) {
+              try { recognition.start(); } catch(e){}
+            }
+          }, 300);
+        }
+      };
+
+      recognition.onerror = (e) => {
+        if (e.error === 'not-allowed') {
+          toast('Permiso de micrófono denegado', 'crit');
+          stopRec();
+        }
+        // Otros errores (network, aborted): auto-reinicia
+      };
+
+      try { recognition.start(); } catch(e){}
+    }
+
+    // ── PILLS ─────────────────────────────────────────────────
+    function insertGuide(text) {
+      const ta = document.getElementById('inputArea');
+      const v  = ta.value.trim();
+      ta.value = v ? v + '\n\n' + text + ' ' : text + ' ';
+      ta.focus();
+      updateCount();
+    }
+
+    function autoGrow(el) {
+      el.style.height = 'auto';
+      el.style.height = Math.max(240, el.scrollHeight) + 'px';
+    }
+
+    function updateCount() {
+      const val   = document.getElementById('inputArea').value;
+      const words = val.trim() === '' ? 0 : val.trim().split(/\s+/).length;
+      document.getElementById('wordCount').textContent = words.toLocaleString('es-CL');
+      document.getElementById('charCount').textContent = val.length.toLocaleString('es-CL');
+    }
+
+    // ── FILE UPLOAD ───────────────────────────────────────────
+    function handleDrop(e) {
+      e.preventDefault();
+      document.getElementById('uploadZone').classList.remove('drag');
+      handleFiles(e.dataTransfer.files);
+    }
+
+    function handleFiles(files) {
+      Array.from(files).forEach(f => processFile(f));
+    }
+
+    function fmtSize(bytes) {
+      return bytes < 1024 * 1024 ? (bytes/1024).toFixed(0) + ' KB' : (bytes/1024/1024).toFixed(1) + ' MB';
+    }
+
+    function fileIcon(name) {
+      const ext = name.split('.').pop().toLowerCase();
+      return { pdf:'📄', docx:'📝', doc:'📝', txt:'📃', md:'📃', xlsx:'📊', xls:'📊', csv:'📊' }[ext] || '📎';
+    }
+
+    async function processFile(file) {
+      if (file.size > 10 * 1024 * 1024) { toast('Archivo muy grande (máx 10MB)', 'warn'); return; }
+      const entry = { name: file.name, size: fmtSize(file.size), text: '', status: 'loading' };
+      uploadedFiles.push(entry);
+      renderFileList();
+
+      try {
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (ext === 'txt' || ext === 'md') {
+          entry.text   = await file.text();
+          entry.status = 'ok';
+        } else {
+          // Enviar al servidor para extracción
+          const fd = new FormData();
+          fd.append('file', file);
+          const resp = await fetch(`${API}/api/extract-text`, { method: 'POST', body: fd });
+          if (resp.ok) {
+            const data = await resp.json();
+            entry.text   = data.text || '';
+            entry.status = 'ok';
+          } else {
+            entry.text   = `[Archivo adjunto: ${file.name}]`;
+            entry.status = 'ok'; // Adjuntar como referencia aunque no se extraiga texto
+          }
+        }
+      } catch(e) {
+        entry.text   = `[Archivo adjunto: ${file.name}]`;
+        entry.status = 'ok';
+      }
+      renderFileList();
+    }
+
+    function removeFile(idx) {
+      uploadedFiles.splice(idx, 1);
+      renderFileList();
+    }
+
+    function renderFileList() {
+      const el = document.getElementById('fileList');
+      el.innerHTML = uploadedFiles.map((f, i) => `
+        <div class="file-item">
+          <div class="file-icon">${fileIcon(f.name)}</div>
+          <div class="file-info">
+            <div class="file-name">${escStr(f.name)}</div>
+            <div class="file-meta">${f.size}</div>
+          </div>
+          <div class="file-status ${f.status}">
+            ${{ok:'✓ Listo', loading:'Procesando...', err:'Error'}[f.status]}
+          </div>
+          <button class="file-remove" onclick="removeFile(${i})" title="Eliminar">✕</button>
+        </div>`).join('');
+    }
+
+    // ── SUBMIT ────────────────────────────────────────────────
+    async function submitRespuesta() {
+      if (recRunning) stopRec();
+
+      const input = document.getElementById('inputArea').value.trim();
+      if (!input) { toast('Escribe o graba tu análisis antes de enviar', 'warn'); return; }
+
+      const btn = document.getElementById('btnSubmit');
+      btn.disabled = true; btn.textContent = 'Enviando...';
+
+      // Armar contexto de documentos
+      const docsContext = uploadedFiles
+        .filter(f => f.text)
+        .map(f => `--- Documento: ${f.name} ---\n${f.text.slice(0, 3000)}`)
+        .join('\n\n');
+
+      const payload = {
+        input: input + (docsContext ? `\n\n== DOCUMENTOS ADJUNTOS ==\n${docsContext}` : ''),
+        docs: uploadedFiles.map(f => ({ name: f.name, chars: f.text?.length || 0 }))
+      };
+
+      try {
+        const resp = await fetch(`${API}/api/responder/${token}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!resp.ok) throw new Error();
+        document.getElementById('formWrap').classList.remove('active');
+        showState('stateDone');
+      } catch(e) {
+        btn.disabled = false; btn.textContent = 'Enviar mi perspectiva →';
+        toast('Error al enviar. Intenta de nuevo.', 'crit');
+      }
+    }
+
+    // ── HELPERS ───────────────────────────────────────────────
+    function escHtml(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+    }
+    function escStr(s) {
+      return String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    let toastTimeout;
+    function toast(msg, type='') {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.className = 'toast show' + (type ? ' ' + type : '');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => el.classList.remove('show'), 4000);
+    }
+
+    init();
+  </script>
+</body>
+</html>

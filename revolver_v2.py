@@ -713,14 +713,15 @@ async def _process_all_inner(sesion_id: str):
     await ws_mgr.broadcast(sesion_id, {'type': 'complete', 'total': total})
     log.info(f'Procesamiento completo sesion={sesion_id}')
 
-    # ── Auto-síntesis: genera La Bala automáticamente al terminar ─────────────
+    # ── Aviso al frontend: ya puede generar La Bala ──────────────────────────
+    # NOTA: NO ejecutamos synthesize_stream aquí. El stream se inicia UNA SOLA
+    # VEZ cuando el cliente abre el WebSocket /ws/bala/{sesion_id} (ver línea
+    # ~1231). Ejecutarlo también aquí causaba que se generaran dos streams en
+    # paralelo, duplicando el texto del Bullet y cobrando el doble de tokens.
     ok_count = sum(1 for r in results if not isinstance(r, Exception))
     if ok_count > 0:
-        log.info(f'Auto-síntesis iniciada sesion={sesion_id} ({ok_count}/{total} OK)')
+        log.info(f'Procesamiento OK sesion={sesion_id} ({ok_count}/{total}) — Bullet listo para generar')
         await ws_mgr.broadcast(sesion_id, {'type': 'auto_synthesis_start'})
-        sesion_fresh = await db_get_sesion(sesion_id)
-        if sesion_fresh:
-            await synthesize_stream(sesion_fresh, sesion_id)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -804,9 +805,17 @@ async def startup():
 # ── Static files ──────────────────────────────────────────────────────────────
 
 @app.get('/', response_class=HTMLResponse, include_in_schema=False)
+async def serve_home():
+    path = os.path.join(BASE_DIR, 'home.html')
+    if os.path.exists(path):
+        return FileResponse(path)
+    # Fallback to app if home.html not found
+    return FileResponse(os.path.join(BASE_DIR, 'app.html'))
+
+
+@app.get('/app', response_class=HTMLResponse, include_in_schema=False)
 async def serve_app():
-    path = os.path.join(BASE_DIR, 'app.html')
-    return FileResponse(path)
+    return FileResponse(os.path.join(BASE_DIR, 'app.html'))
 
 
 @app.get('/responder/{token}', response_class=HTMLResponse, include_in_schema=False)

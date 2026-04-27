@@ -548,6 +548,83 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 .brief-table tr:last-child td{border-bottom:none;}
 .brief-table tr:hover td{background:rgba(240,238,232,0.02);}
 
+/* Brief cards (cuando una tabla tiene celdas largas se renderiza como cards) */
+.brief-card-grid{display:flex;flex-direction:column;gap:0.75rem;margin:1.2rem 0;}
+.brief-card{
+  background:rgba(240,238,232,0.02);
+  border:1px solid var(--rule);
+  border-left:3px solid var(--red);
+  padding:0.95rem 1.1rem;
+}
+.brief-card-top{
+  display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;
+  margin-bottom:0.6rem;
+}
+.brief-card-idx{
+  font-family:'Montserrat',sans-serif;
+  font-size:0.5rem;letter-spacing:0.18em;
+  text-transform:uppercase;
+  color:var(--brass);
+  padding:0.18rem 0.55rem;
+  border:1px solid rgba(200,16,46,0.35);
+  background:rgba(200,16,46,0.06);
+}
+.brief-card-role{
+  font-family:'Montserrat',sans-serif;
+  font-size:0.5rem;letter-spacing:0.12em;
+  text-transform:uppercase;
+  color:rgba(240,238,232,0.65);
+  padding:0.18rem 0.55rem;
+  background:rgba(240,238,232,0.04);
+  border-radius:10px;
+}
+.brief-card-body{margin:0 0 0.55rem;}
+.brief-card-bodylbl{
+  display:block;
+  font-family:'Montserrat',sans-serif;
+  font-size:0.45rem;letter-spacing:0.18em;
+  text-transform:uppercase;
+  color:var(--brass);
+  margin-bottom:0.25rem;
+}
+.brief-card-body p{
+  font-size:0.92rem;line-height:1.6;
+  color:var(--paper);font-weight:300;margin:0;
+}
+.brief-card-meta{
+  display:flex;flex-direction:column;gap:0.3rem;
+  padding-top:0.55rem;
+  border-top:1px solid var(--rule);
+  margin-top:0.55rem;
+}
+.brief-card-metarow{display:flex;gap:0.5rem;font-size:0.78rem;line-height:1.5;}
+.brief-card-metalbl{
+  font-family:'Montserrat',sans-serif;
+  font-size:0.5rem;letter-spacing:0.16em;
+  text-transform:uppercase;
+  color:var(--brass);
+  flex-shrink:0;min-width:90px;
+  padding-top:0.15rem;
+}
+.brief-card-metaval{
+  color:rgba(240,238,232,0.78);font-weight:300;
+}
+.brief-card-kpi{
+  margin-top:0.6rem;
+  padding:0.5rem 0.75rem;
+  background:rgba(200,16,46,0.08);
+  border-left:2px solid var(--red);
+  font-size:0.82rem;line-height:1.5;
+  color:var(--paper);
+}
+.brief-card-kpilbl{
+  font-family:'Montserrat',sans-serif;
+  font-size:0.5rem;letter-spacing:0.18em;
+  text-transform:uppercase;
+  color:var(--brass);
+  margin-right:0.4rem;
+}
+
 /* Brief list */
 .brief-list{
   margin:0.6rem 0 0.6rem 1.2rem;
@@ -2757,18 +2834,107 @@ function injectInfographics(html, visData) {
   return html;
 }
 
+// ── Heurística compartida: ¿conviene cards en vez de tabla? ──────────────
+// Una tabla se renderiza como tarjetas si:
+//   - alguna celda supera 80 chars, O
+//   - tiene 5+ columnas y alguna celda supera 50 chars
+function _shouldRenderAsCards(headers, rows) {
+  if (!rows || rows.length === 0) return false;
+  let maxLen = 0;
+  rows.forEach(r => r.forEach(c => { if (c.length > maxLen) maxLen = c.length; }));
+  if (maxLen > 80) return true;
+  if (headers.length >= 5 && maxLen > 50) return true;
+  return false;
+}
+
+// Clasifica una columna por su header para decidir cómo renderizarla en card.
+// Devuelve: 'index' | 'kpi' | 'role' | 'body' | 'meta'
+function _classifyColumn(header) {
+  const h = (header || '').toLowerCase().trim();
+  if (h === '#' || h === 'n°' || h === 'nº' || h === 'id') return 'index';
+  if (/kpi|resultado|entregable|m[ée]trica.*objetivo|meta/.test(h)) return 'kpi';
+  if (/responsable|owner|due[ñn]o|encargado/.test(h)) return 'role';
+  if (/acci[óo]n|riesgo|mitigaci[óo]n|se[ñn]al|descripci[óo]n|tarea|objetivo|hito|propuesta/.test(h)) return 'body';
+  return 'meta';
+}
+
+// Render de tarjetas (modo 'app' usa CSS variables del proyecto)
+function _renderCards(headers, rows, mode) {
+  const cls = mode === 'print' ? 'pcard' : 'brief-card';
+  const types = headers.map(_classifyColumn);
+  let out = `<div class="${cls}-grid">`;
+  rows.forEach(row => {
+    out += `<div class="${cls}">`;
+    // Header band: index + roles
+    const idxIdx = types.indexOf('index');
+    const roleIdxs = types.map((t,i) => t === 'role' ? i : -1).filter(i => i >= 0);
+    const hasTopBand = idxIdx >= 0 || roleIdxs.length > 0;
+    if (hasTopBand) {
+      out += `<div class="${cls}-top">`;
+      if (idxIdx >= 0) out += `<span class="${cls}-idx">${row[idxIdx]}</span>`;
+      roleIdxs.forEach(i => {
+        out += `<span class="${cls}-role">${row[i]}</span>`;
+      });
+      out += `</div>`;
+    }
+    // Body: largest 'body' cell, or longest cell if none classified
+    let bodyIdxs = types.map((t,i) => t === 'body' ? i : -1).filter(i => i >= 0);
+    if (bodyIdxs.length === 0) {
+      let longest = -1, longestLen = 0;
+      types.forEach((t,i) => {
+        if (t === 'meta' && row[i] && row[i].length > longestLen) { longest = i; longestLen = row[i].length; }
+      });
+      if (longest >= 0) bodyIdxs = [longest];
+    }
+    bodyIdxs.forEach(i => {
+      const lbl = headers[i] && bodyIdxs.length > 1 ? `<span class="${cls}-bodylbl">${headers[i]}</span>` : '';
+      out += `<div class="${cls}-body">${lbl}<p>${row[i] || ''}</p></div>`;
+    });
+    // Meta: anything left that isn't index/role/kpi/body
+    const metaIdxs = types.map((t,i) => (t === 'meta' && !bodyIdxs.includes(i)) ? i : -1).filter(i => i >= 0);
+    if (metaIdxs.length > 0) {
+      out += `<div class="${cls}-meta">`;
+      metaIdxs.forEach(i => {
+        out += `<div class="${cls}-metarow"><span class="${cls}-metalbl">${headers[i]}</span><span class="${cls}-metaval">${row[i] || ''}</span></div>`;
+      });
+      out += `</div>`;
+    }
+    // KPI band
+    const kpiIdxs = types.map((t,i) => t === 'kpi' ? i : -1).filter(i => i >= 0);
+    kpiIdxs.forEach(i => {
+      out += `<div class="${cls}-kpi"><span class="${cls}-kpilbl">${headers[i]}</span> ${row[i] || ''}</div>`;
+    });
+    out += `</div>`;
+  });
+  out += `</div>`;
+  return out;
+}
+
 // Markdown → HTML renderer completo
 function mdToHtml(md) {
   const lines = md.split('\n');
   let html = '';
-  let inTable = false, tableHeader = false;
+  let tableBuf = null; // { headers: [], rows: [], inHeader: true }
   let inList = false, listType = '';
 
   const closeList = () => {
     if (inList) { html += listType === 'ol' ? '</ol>' : '</ul>'; inList = false; }
   };
-  const closeTable = () => {
-    if (inTable) { html += '</tbody></table></div>'; inTable = false; tableHeader = false; }
+  const flushTable = () => {
+    if (!tableBuf) return;
+    const { headers, rows } = tableBuf;
+    if (_shouldRenderAsCards(headers, rows)) {
+      html += _renderCards(headers.map(h => inline(h)), rows.map(r => r.map(c => inline(c))), 'app');
+    } else {
+      html += '<div style="overflow-x:auto;margin:1rem 0;"><table class="brief-table"><thead><tr>';
+      headers.forEach(h => { html += `<th>${inline(h)}</th>`; });
+      html += '</tr></thead><tbody>';
+      rows.forEach(r => {
+        html += '<tr>' + r.map(c => `<td>${inline(c)}</td>`).join('') + '</tr>';
+      });
+      html += '</tbody></table></div>';
+    }
+    tableBuf = null;
   };
 
   const inline = s => s
@@ -2777,21 +2943,16 @@ function mdToHtml(md) {
     .replace(/`(.+?)`/g, '<code style="font-family:Montserrat,sans-serif;font-size:0.8em;background:var(--surface);padding:0.1em 0.4em;border-radius:2px;">$1</code>');
 
   lines.forEach(line => {
-    // Tabla
+    // Tabla → bufferear
     if (line.trim().startsWith('|')) {
       closeList();
-      if (!inTable) {
-        html += '<div style="overflow-x:auto;margin:1rem 0;"><table class="brief-table"><thead>';
-        inTable = true; tableHeader = true;
-      }
-      if (line.match(/^\|[-| ]+\|$/)) {
-        html += '</thead><tbody>'; tableHeader = false; return;
-      }
-      const cells = line.split('|').filter(c => c.trim() !== '');
-      const tag = tableHeader ? 'th' : 'td';
-      html += '<tr>' + cells.map(c => `<${tag}>${inline(c.trim())}</${tag}>`).join('') + '</tr>';
+      if (!tableBuf) tableBuf = { headers: [], rows: [], inHeader: true };
+      if (line.match(/^\|[-| :]+\|$/)) { tableBuf.inHeader = false; return; }
+      const cells = line.split('|').filter((_, i, a) => i > 0 && i < a.length - 1).map(c => c.trim());
+      if (tableBuf.inHeader) tableBuf.headers = cells;
+      else tableBuf.rows.push(cells);
       return;
-    } else { closeTable(); }
+    } else { flushTable(); }
 
     // Headers
     if (line.startsWith('# '))  { closeList(); html += `<h1 class="brief-h1">${inline(line.slice(2))}</h1>`; return; }
@@ -2820,7 +2981,7 @@ function mdToHtml(md) {
     // Párrafo
     html += `<p class="brief-p">${inline(line)}</p>`;
   });
-  closeList(); closeTable();
+  closeList(); flushTable();
   return html;
 }
 
@@ -3000,27 +3161,44 @@ function exportBala() {
   // ── Convert markdown to clean HTML for print ──────────────────────────────
   function mdPrint(md) {
     const lines = md.split('\n');
-    let html = '', inList = false, inTable = false;
+    let html = '', inList = false;
+    let tableBuf = null;
 
     const inline = s => s
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.+?)\*/g,     '<em>$1</em>')
       .replace(/`(.+?)`/g,       '<code>$1</code>');
 
+    const flushTable = () => {
+      if (!tableBuf) return;
+      const { headers, rows } = tableBuf;
+      if (typeof _shouldRenderAsCards === 'function' && _shouldRenderAsCards(headers, rows)) {
+        html += _renderCards(headers.map(h => inline(h)), rows.map(r => r.map(c => inline(c))), 'print');
+      } else {
+        html += '<table><thead><tr>';
+        headers.forEach(h => { html += `<th>${inline(h)}</th>`; });
+        html += '</tr></thead><tbody>';
+        rows.forEach(r => {
+          html += '<tr>' + r.map(c => `<td>${inline(c)}</td>`).join('') + '</tr>';
+        });
+        html += '</tbody></table>';
+      }
+      tableBuf = null;
+    };
+
     lines.forEach(raw => {
       const line = raw.trimEnd();
 
-      // Table rows
+      // Table rows → buffer
       if (line.startsWith('|')) {
-        if (!inTable) { html += '<table>'; inTable = true; }
-        const cells = line.split('|').filter((_,i,a) => i>0 && i<a.length-1);
-        const isSep = cells.every(c => /^[-: ]+$/.test(c));
-        if (!isSep) {
-          const tag = (!inTable || html.endsWith('<table>')) ? 'th' : 'td';
-          html += '<tr>' + cells.map(c => `<${tag}>${inline(c.trim())}</${tag}>`).join('') + '</tr>';
-        }
+        if (!tableBuf) tableBuf = { headers: [], rows: [], inHeader: true };
+        const cells = line.split('|').filter((_,i,a) => i>0 && i<a.length-1).map(c => c.trim());
+        const isSep = cells.every(c => /^[-: ]*$/.test(c));
+        if (isSep) { tableBuf.inHeader = false; return; }
+        if (tableBuf.inHeader) tableBuf.headers = cells;
+        else tableBuf.rows.push(cells);
         return;
-      } else if (inTable) { html += '</table>'; inTable = false; }
+      } else { flushTable(); }
 
       // Lists
       if (/^[-*•]\s/.test(line)) {
@@ -3031,7 +3209,7 @@ function exportBala() {
         if (!inList) { html += '<ol>'; inList = true; }
         html += `<li>${inline(line.replace(/^\d+\.\s+/, ''))}</li>`;
         return;
-      } else if (inList) { html += inList ? '</ul>' : '</ol>'; inList = false; }
+      } else if (inList) { html += '</ul>'; inList = false; }
 
       // Headings
       if (/^#{1}\s/.test(line)) { html += `<h1>${inline(line.replace(/^#\s+/,''))}</h1>`; return; }
@@ -3043,7 +3221,7 @@ function exportBala() {
       html += `<p>${inline(line)}</p>`;
     });
     if (inList)  html += '</ul>';
-    if (inTable) html += '</table>';
+    flushTable();
     return html;
   }
 
@@ -3103,7 +3281,19 @@ function exportBala() {
     color: var(--mid);
     margin-bottom: 1.5rem;
   }
-  .cover-system strong { color: var(--red); }
+  /* (cover-system strong rule retirada: ahora usa .rv-logo) */
+
+  /* ── BRAND LOGO (regla: 1ra y última R en rojo, última R espejada) ── */
+  .rv-logo {
+    font-weight: 700;
+    letter-spacing: inherit;
+  }
+  .rv-logo .acc { color: var(--red); }
+  .rv-logo .mirror-r {
+    display: inline-block;
+    transform: scaleX(-1);
+    letter-spacing: 0;
+  }
   .cover-empresa {
     font-family: 'Playfair Display', serif;
     font-size: 38pt;
@@ -3252,6 +3442,112 @@ function exportBala() {
   }
   tr:nth-child(even) td { background: var(--smoke); }
 
+  /* ── CARDS (tablas largas) ──────────── */
+  .pcard-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    margin: 1.2rem 0 1.6rem;
+  }
+  .pcard {
+    background: white;
+    border: 0.5px solid var(--rule);
+    border-left: 3px solid var(--red);
+    padding: 0.85rem 1.05rem;
+    page-break-inside: avoid;
+  }
+  .pcard-top {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.55rem;
+  }
+  .pcard-idx {
+    font-family: 'Montserrat', monospace;
+    font-size: 7pt;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--red);
+    padding: 0.12rem 0.5rem;
+    border: 0.5px solid var(--red);
+    background: rgba(200, 16, 46, 0.04);
+    font-weight: 500;
+  }
+  .pcard-role {
+    font-family: 'Montserrat', monospace;
+    font-size: 7pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--mid);
+    padding: 0.12rem 0.5rem;
+    background: var(--smoke);
+    border-radius: 10px;
+  }
+  .pcard-body { margin: 0 0 0.5rem; }
+  .pcard-bodylbl {
+    display: block;
+    font-family: 'Montserrat', monospace;
+    font-size: 6.5pt;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--brass);
+    margin-bottom: 0.2rem;
+  }
+  .pcard-body p {
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    font-weight: 400;
+    margin: 0;
+  }
+  .pcard-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding-top: 0.5rem;
+    border-top: 0.5px solid var(--rule);
+    margin-top: 0.5rem;
+  }
+  .pcard-metarow {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 9pt;
+    line-height: 1.5;
+  }
+  .pcard-metalbl {
+    font-family: 'Montserrat', monospace;
+    font-size: 7pt;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brass);
+    flex-shrink: 0;
+    min-width: 95px;
+    padding-top: 0.1rem;
+  }
+  .pcard-metaval {
+    color: var(--ink);
+    font-weight: 300;
+  }
+  .pcard-kpi {
+    margin-top: 0.55rem;
+    padding: 0.45rem 0.7rem;
+    background: rgba(200, 16, 46, 0.05);
+    border-left: 2px solid var(--red);
+    font-size: 9.5pt;
+    line-height: 1.5;
+    color: var(--ink);
+  }
+  .pcard-kpilbl {
+    font-family: 'Montserrat', monospace;
+    font-size: 7pt;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-right: 0.4rem;
+    font-weight: 500;
+  }
+
   /* ── SECTION DIVIDER ────────────────── */
   .section-part {
     font-family: 'Montserrat', monospace;
@@ -3288,7 +3584,7 @@ function exportBala() {
     text-transform: uppercase;
     color: var(--mid);
   }
-  .footer-logo strong { color: var(--red); }
+  /* (footer-logo strong rule retirada: ahora usa .rv-logo) */
   .footer-date {
     font-family: 'Montserrat', monospace;
     font-size: 7pt;
@@ -3360,7 +3656,7 @@ function exportBala() {
 </head>
 <body>
   <div class="print-bar no-print">
-    <span><strong style="color:var(--red);">REVOLVER</strong> — Advisory Brief · ${empresa}</span>
+    <span><span class="rv-logo"><span class="acc">R</span>EVOLVE<span class="acc mirror-r">R</span></span> — Advisory Brief · ${empresa}</span>
     <button onclick="window.print()">↓ Guardar como PDF</button>
   </div>
 
@@ -3368,7 +3664,7 @@ function exportBala() {
     <!-- COVER -->
     <div class="cover">
       <div class="cover-stripe"></div>
-      <div class="cover-system"><strong>REVOLVER</strong> / Sistema Multi-IA de Consultoría Estratégica</div>
+      <div class="cover-system"><span class="rv-logo"><span class="acc">R</span>EVOLVE<span class="acc mirror-r">R</span></span> / Sistema Multi-IA de Consultoría Estratégica</div>
       <div class="cover-empresa">${empresa}</div>
       <div class="cover-problema">${problema}</div>
       <div class="cover-meta">
@@ -3386,7 +3682,7 @@ function exportBala() {
 
     <!-- FOOTER -->
     <div class="footer">
-      <div class="footer-logo">Generado por <strong>REVOLVER</strong> · Sistema Multi-IA</div>
+      <div class="footer-logo">Generado por <span class="rv-logo"><span class="acc">R</span>EVOLVE<span class="acc mirror-r">R</span></span> · Sistema Multi-IA</div>
       <div class="footer-date">${dateStr} · Documento confidencial</div>
     </div>
   </div>

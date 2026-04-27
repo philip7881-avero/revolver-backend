@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REVOLVER — De Insight Humano a Inteligencia Sintética</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --red: #C0392B;
+    --red-dark: #962d22;
+    --black: #0a0a0a;
+    --dark: #111;
+    --mid: #1a1a1a;
+    --border: #2a2a2a;
+    --text: #e8e8e8;
+    --muted: #888;
+    --accent: #C0392B;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: var(--black);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 48px;
+    background: rgba(10,10,10,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.12em;
+    color: var(--text);
+  }
+  .nav-logo span { color: var(--red); }
+  .nav-cta {
+    background: var(--red);
+    color: #fff;
+    border: none;
+    padding: 10px 24px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .nav-cta:hover { background: var(--red-dark); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    text-align: center;
+    padding: 120px 32px 80px;
+    background: radial-gradient(ellipse at 50% 60%, rgba(192,57,43,0.12) 0%, transparent 70%),
+                linear-gradient(to bottom, #0a0a0a 0%, #111 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: 'R';
+    position: absolute;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 55vw;
+    color: rgba(192,57,43,0.04);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    user-select: none;
+    line-height: 1;
+  }
+  .hero-eyebrow {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 24px;
+  }
+  .hero-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(5rem, 18vw, 14rem);
+    line-height: 0.9;
+    letter-spacing: 0.05em;
+    margin-bottom: 32px;
+    color: var(--text);
+  }
+  .hero-logo .r-first,
+  .hero-logo .r-last { color: var(--red); }
+  .hero-logo .r-last {
+    display: inline-block;
+    transform: scaleX(-1);
+    /* letter-spacing inherited from parent appears on the WRONG side after flip
+       (visually adds extra gap to the LEFT). Cancel it here — the correct
+       gap already comes from the parent's letter-spacing on the preceding E. */
+    letter-spacing: 0;
+  }
+  .hero-tagline {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: clamp(1.1rem, 3vw, 1.7rem);
+    font-weight: 300;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    max-width: 600px;
+    margin-bottom: 16px;
+  }
+  .hero-tagline strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+  .hero-sub {
+    font-size: 1rem;
+    color: var(--muted);
+    max-width: 520px;
+    line-height: 1.7;
+    margin-bottom: 48px;
+  }
+  .hero-sub em { color: var(--text); font-style: normal; }
+  .btn-hero {
+    background: var(--red);
+    color: #fff;
+    border: none;
+    padding: 18px 48px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    z-index: 1;
+  }
+  .btn-hero:hover {
+    background: #fff;
+    color: var(--red);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(192,57,43,0.35);
+  }
+  .hero-scroll {
+    position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    color: var(--muted);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    animation: bounce 2s infinite;
+  }
+  .hero-scroll svg { opacity: 0.4; }
+  @keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(6px); }
+  }
+
+  /* ── SECTIONS ── */
+  section {
+    padding: 96px 32px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .section-eyebrow {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    letter-spacing: 0.06em;
+    line-height: 1;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+  .section-desc {
+    font-size: 1.05rem;
+    color: var(--muted);
+    max-width: 640px;
+    line-height: 1.75;
+  }
+
+  /* ── PROBLEMA ── */
+  .problem-section {
+    border-top: 1px solid var(--border);
+    padding-top: 96px;
+  }
+  .problem-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    margin-top: 48px;
+  }
+  .problem-card {
+    background: var(--mid);
+    padding: 36px 32px;
+    border: 1px solid var(--border);
+  }
+  .problem-card .icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 22px;
+    display: block;
+  }
+  .problem-card h3 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+  .problem-card p {
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+  @media (max-width: 640px) {
+    .problem-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── METÁFORA ── */
+  .metaphor-section {
+    background: var(--dark);
+    max-width: 100%;
+    padding: 96px 32px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .metaphor-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .metaphor-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    margin-top: 48px;
+    border: 1px solid var(--border);
+  }
+  .metaphor-card {
+    background: var(--mid);
+    padding: 32px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .metaphor-card::before {
+    content: attr(data-num);
+    position: absolute;
+    top: -10px; right: 12px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 5rem;
+    color: rgba(255,255,255,0.03);
+    line-height: 1;
+  }
+  .metaphor-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 10px;
+  }
+  .metaphor-card h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.06em;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .metaphor-card p {
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  @media (max-width: 800px) {
+    .metaphor-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 500px) {
+    .metaphor-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── LA BALA ── */
+  .bala-section {
+    padding: 96px 32px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .bala-quote {
+    border-left: 3px solid var(--red);
+    padding: 24px 32px;
+    margin: 48px 0;
+    background: rgba(192,57,43,0.06);
+  }
+  .bala-quote p {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+    font-weight: 300;
+    font-style: italic;
+    color: var(--text);
+    line-height: 1.6;
+    letter-spacing: 0.02em;
+  }
+  .bala-quote cite {
+    display: block;
+    margin-top: 12px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--red);
+    font-style: normal;
+  }
+  .bala-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: start;
+    margin-top: 48px;
+  }
+  .bala-text p {
+    font-size: 1rem;
+    color: var(--muted);
+    line-height: 1.75;
+    margin-bottom: 20px;
+  }
+  .bala-text p em { color: var(--text); font-style: normal; }
+  .bala-layers {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .layer-card {
+    background: var(--mid);
+    border: 1px solid var(--border);
+    padding: 24px 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .layer-card::after {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--red);
+  }
+  .layer-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 6px;
+  }
+  .layer-card h4 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    letter-spacing: 0.08em;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .layer-card p {
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+  @media (max-width: 768px) {
+    .bala-body { grid-template-columns: 1fr; }
+  }
+
+  /* ── FASES ── */
+  .fases-section {
+    background: var(--dark);
+    max-width: 100%;
+    padding: 96px 32px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .fases-inner { max-width: 1100px; margin: 0 auto; }
+  .fases-flow {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1px;
+    margin-top: 48px;
+    border: 1px solid var(--border);
+    position: relative;
+  }
+  .fase-card {
+    background: var(--mid);
+    padding: 28px 20px;
+    text-align: center;
+    position: relative;
+    transition: background 0.2s;
+  }
+  .fase-card:hover { background: #222; }
+  .fase-card:last-child {
+    background: rgba(192,57,43,0.12);
+    border: 1px solid rgba(192,57,43,0.35);
+  }
+  .fase-card:last-child:hover { background: rgba(192,57,43,0.2); }
+  .fase-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3rem;
+    color: rgba(255,255,255,0.06);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .fase-card:last-child .fase-num { color: rgba(192,57,43,0.25); }
+  .fase-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.08em;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .fase-card:last-child .fase-name { color: var(--red); font-size: 1.1rem; }
+  .fase-tag {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .fase-card:last-child .fase-tag { color: rgba(192,57,43,0.7); }
+  @media (max-width: 900px) {
+    .fases-flow { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 500px) {
+    .fases-flow { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* ── POLVORA ── */
+  .models-section {
+    padding: 96px 32px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .models-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    margin-top: 48px;
+  }
+  .model-card {
+    background: var(--mid);
+    border: 1px solid var(--border);
+    padding: 28px 24px;
+    transition: border-color 0.2s;
+  }
+  .model-card:hover { border-color: var(--red); }
+  .model-icon {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--red);
+    margin-bottom: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+  }
+  .model-card h3 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .model-card p {
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  @media (max-width: 768px) {
+    .models-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 480px) {
+    .models-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── CTA FINAL ── */
+  .cta-section {
+    text-align: center;
+    padding: 120px 32px;
+    background: radial-gradient(ellipse at 50% 50%, rgba(192,57,43,0.15) 0%, transparent 70%);
+    border-top: 1px solid var(--border);
+  }
+  .cta-section .section-title { margin-bottom: 16px; }
+  .cta-sub {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 48px;
+  }
+  .btn-cta-main {
+    display: inline-block;
+    background: var(--red);
+    color: #fff;
+    border: none;
+    padding: 20px 56px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.25s;
+    margin-bottom: 16px;
+  }
+  .btn-cta-main:hover {
+    background: #fff;
+    color: var(--red);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(192,57,43,0.4);
+  }
+
+  /* ── OVERLAY ── */
+  #app-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    transform: translateY(100%);
+    transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    background: var(--black);
+    display: flex;
+    flex-direction: column;
+  }
+  #app-overlay.open { transform: translateY(0); }
+
+  .overlay-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 24px;
+    background: var(--mid);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .overlay-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 0.12em;
+    color: var(--text);
+  }
+  .overlay-title span { color: var(--red); }
+  .overlay-title .r-last-overlay { display: inline-block; transform: scaleX(-1); letter-spacing: 0; }
+  .btn-close {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 7px 16px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-close:hover { border-color: var(--red); color: var(--red); }
+
+  #app-frame {
+    flex: 1;
+    border: none;
+    width: 100%;
+    display: block;
+    background: var(--black);
+  }
+
+  #backdrop {
+    display: none;
+    position: fixed; inset: 0; z-index: 150;
+    background: rgba(0,0,0,0.75);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 32px;
+    text-align: center;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  footer strong { color: var(--red); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo"><span>R</span>EVOLVE<span class="r-last" style="display:inline-block;transform:scaleX(-1);letter-spacing:0">R</span></div>
+  <button class="nav-cta" onclick="openApp()">Disparar REVOLVER</button>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">Inteligencia colectiva aumentada</div>
+  <div class="hero-logo">
+    <span class="r-first">R</span>EVOLVE<span class="r-last">R</span>
+  </div>
+  <div class="hero-tagline">De <strong>insight humano</strong> a <strong>inteligencia sintética</strong></div>
+  <p class="hero-sub">
+    Tu equipo sabe más de lo que cree. REVOLVER extrae esas perspectivas,
+    las potencia con <em>seis modelos de IA en paralelo</em>
+    y las funde en algo que no existía antes:<br><em>La Bala.</em>
+  </p>
+  <button class="btn-hero" onclick="openApp()">Disparar REVOLVER &rarr;</button>
+  <div class="hero-scroll">
+    <svg width="16" height="24" viewBox="0 0 16 24" fill="none">
+      <path d="M8 4v16M2 14l6 6 6-6" stroke="#888" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    scroll
+  </div>
+</div>
+
+<!-- EL PROBLEMA -->
+<section class="problem-section">
+  <div class="section-eyebrow">El punto de partida</div>
+  <h2 class="section-title">Las decisiones de equipo tienen un problema</h2>
+  <p class="section-desc">
+    Los equipos brillantes pierden su inteligencia colectiva en el proceso de decidir.
+    Reuniones interminables, sesgos de grupo, voces que no se escuchan.
+  </p>
+  <div class="problem-grid">
+    <div class="problem-card">
+      <!-- Icon: Speech bubble with a red slash — voice silenced -->
+      <div class="icon">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6 5 H30 Q36 5 36 11 V23 Q36 29 30 29 H20 L12 37 V29 H6 Q2 29 2 23 V11 Q2 5 6 5 Z" stroke="#E8E8E8" stroke-width="1.8" fill="none" stroke-linejoin="round"/>
+          <line x1="9" y1="13" x2="29" y2="13" stroke="#555" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="9" y1="19" x2="24" y2="19" stroke="#555" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="2" y1="2" x2="38" y2="37" stroke="#C0392B" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h3>Las voces se pierden</h3>
+      <p>Las perspectivas más valiosas quedan sin decirse. El que habla más fuerte domina; el que sabe más, calla.</p>
+    </div>
+    <div class="problem-card">
+      <!-- Icon: 3 individual perspectives converging to one thick red line — groupthink -->
+      <div class="icon">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="5" cy="7" r="4" stroke="#E8E8E8" stroke-width="1.6" fill="none"/>
+          <circle cx="24" cy="4" r="4" stroke="#E8E8E8" stroke-width="1.6" fill="none"/>
+          <circle cx="43" cy="7" r="4" stroke="#E8E8E8" stroke-width="1.6" fill="none"/>
+          <line x1="8" y1="10" x2="21" y2="24" stroke="#888" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="24" y1="8" x2="24" y2="24" stroke="#888" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="40" y1="10" x2="27" y2="24" stroke="#888" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="24" cy="27" r="4" stroke="#C0392B" stroke-width="1.8" fill="rgba(192,57,43,0.18)"/>
+          <line x1="24" y1="31" x2="24" y2="45" stroke="#C0392B" stroke-width="4.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h3>Pensamiento de grupo</h3>
+      <p>Las reuniones convergen demasiado rápido. El consenso reemplaza al análisis y las ideas divergentes mueren antes de nacer.</p>
+    </div>
+    <div class="problem-card">
+      <!-- Icon: Circular process arrow looping around an exhausted/dead energy symbol -->
+      <div class="icon">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M24 6 A18 18 0 1 1 6 24" stroke="#E8E8E8" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+          <path d="M3 24 L7 19 L11 24" stroke="#E8E8E8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <circle cx="24" cy="24" r="7" stroke="#C0392B" stroke-width="1.6" fill="none"/>
+          <line x1="20" y1="20" x2="28" y2="28" stroke="#C0392B" stroke-width="1.6" stroke-linecap="round"/>
+          <line x1="28" y1="20" x2="20" y2="28" stroke="#C0392B" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h3>El proceso consume la energía</h3>
+      <p>La mecánica de coordinar personas consume el tiempo que debería gastarse en pensar. El proceso le gana al propósito.</p>
+    </div>
+    <div class="problem-card">
+      <!-- Icon: 4 nodes connected by broken/dashed lines + missing center = no synthesis -->
+      <div class="icon">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="8" cy="8"   r="5" stroke="#E8E8E8" stroke-width="1.7" fill="none"/>
+          <circle cx="40" cy="8"  r="5" stroke="#E8E8E8" stroke-width="1.7" fill="none"/>
+          <circle cx="8" cy="40"  r="5" stroke="#E8E8E8" stroke-width="1.7" fill="none"/>
+          <circle cx="40" cy="40" r="5" stroke="#E8E8E8" stroke-width="1.7" fill="none"/>
+          <line x1="13" y1="8"  x2="35" y2="8"  stroke="#444" stroke-width="1.3" stroke-dasharray="3.5 3" stroke-linecap="round"/>
+          <line x1="13" y1="40" x2="35" y2="40" stroke="#444" stroke-width="1.3" stroke-dasharray="3.5 3" stroke-linecap="round"/>
+          <line x1="8" y1="13"  x2="8" y2="35"  stroke="#444" stroke-width="1.3" stroke-dasharray="3.5 3" stroke-linecap="round"/>
+          <line x1="40" y1="13" x2="40" y2="35" stroke="#444" stroke-width="1.3" stroke-dasharray="3.5 3" stroke-linecap="round"/>
+          <line x1="12" y1="12" x2="36" y2="36" stroke="#444" stroke-width="1.3" stroke-dasharray="3.5 3" stroke-linecap="round"/>
+          <line x1="36" y1="12" x2="12" y2="36" stroke="#444" stroke-width="1.3" stroke-dasharray="3.5 3" stroke-linecap="round"/>
+          <circle cx="24" cy="24" r="5" stroke="#C0392B" stroke-width="1.6" fill="none" stroke-dasharray="2.5 2.5"/>
+        </svg>
+      </div>
+      <h3>Decisiones sin síntesis real</h3>
+      <p>El resultado final es una lista de puntos, no una solución integrada. Nadie se queda con algo que no existía antes.</p>
+    </div>
+  </div>
+</section>
+
+<!-- LA METÁFORA -->
+<div class="metaphor-section">
+  <div class="metaphor-inner">
+    <div class="section-eyebrow">La metáfora central</div>
+    <h2 class="section-title">Un revólver carga seis cámaras. Las dispara todas a la vez.</h2>
+    <p class="section-desc">
+      REVOLVER no es una herramienta de votación ni un chatbot. Es un mecanismo de síntesis:
+      cada perspectiva humana es una cámara; cada modelo de IA es la pólvora que la potencia.
+    </p>
+    <div class="metaphor-grid">
+      <div class="metaphor-card" data-num="1">
+        <div class="metaphor-label">El objetivo</div>
+        <h3>El Blanco</h3>
+        <p>El problema o pregunta que el equipo necesita resolver. Sin blanco, no hay disparo.</p>
+      </div>
+      <div class="metaphor-card" data-num="2">
+        <div class="metaphor-label">Las cámaras</div>
+        <h3>El Tambor</h3>
+        <p>Las perspectivas individuales de cada miembro del equipo, independientes y sin contaminarse entre sí.</p>
+      </div>
+      <div class="metaphor-card" data-num="3">
+        <div class="metaphor-label">La carga</div>
+        <h3>La Pólvora</h3>
+        <p>Seis modelos de IA distintos procesan cada perspectiva humana en paralelo, amplificando su potencia.</p>
+      </div>
+      <div class="metaphor-card" data-num="4">
+        <div class="metaphor-label">El resultado</div>
+        <h3>El Disparo</h3>
+        <p>Una explosión de procesamiento simultáneo que produce algo nuevo: un producto sintético que ninguna cámara tenía sola.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LA BALA -->
+<section class="bala-section">
+  <div class="section-eyebrow">El producto final</div>
+  <h2 class="section-title">La Bala: inteligencia que no existía antes</h2>
+
+  <div class="bala-quote">
+    <p>"La Bala no es una decisión tomada en base a la opinión del grupo. Es un producto sintético de inteligencia — algo que emergió de la fusión de perspectivas humanas y modelos de IA, y que no existía antes del proceso."</p>
+    <cite>— Modelo de Producto REVOLVER</cite>
+  </div>
+
+  <div class="bala-body">
+    <div class="bala-text">
+      <p>
+        La mayoría de los procesos colectivos terminan con una <em>decisión</em>: alguien vota, alguien cede, alguien impone.
+        REVOLVER no vota. Sintetiza.
+      </p>
+      <p>
+        El proceso captura lo que cada persona sabe —incluso lo que no sabría articular en voz alta—
+        y lo somete a seis miradas artificiales distintas que no comparten sesgos entre sí.
+        Lo que emerge de esa tensión no es un promedio: es algo nuevo.
+      </p>
+      <p>
+        <em>La Bala es el entregable.</em> No un acta. No una lista de puntos. Un producto de inteligencia
+        con estructura, argumentación y profundidad que el equipo no habría producido de otra manera.
+      </p>
+    </div>
+    <div class="bala-layers">
+      <div class="layer-card">
+        <div class="layer-num">Capa 1</div>
+        <h4>Embudo Dimensional</h4>
+        <p>Cada perspectiva humana es procesada por los 6 modelos, que la analizan desde ángulos independientes — técnico, estratégico, emocional, crítico, creativo, sistémico.</p>
+      </div>
+      <div class="layer-card">
+        <div class="layer-num">Capa 2</div>
+        <h4>Refinamiento Adversarial</h4>
+        <p>Los modelos no se apoyan: se cuestionan. Las contradicciones entre perspectivas se explicitan y se resuelven por tensión, no por consenso fácil.</p>
+      </div>
+      <div class="layer-card">
+        <div class="layer-num">Capa 3</div>
+        <h4>Consenso Multi-Modelo</h4>
+        <p>De la tensión emerge una síntesis con estructura narrativa, argumentación integrada y conclusiones accionables. Eso es La Bala.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LAS FASES -->
+<div class="fases-section">
+  <div class="fases-inner">
+    <div class="section-eyebrow">El proceso completo</div>
+    <h2 class="section-title">Seis fases. Una bala.</h2>
+    <p class="section-desc">
+      Desde que defines el problema hasta que disparas La Bala, REVOLVER guía al equipo
+      por un proceso diseñado para que nada se pierda en el camino.
+    </p>
+    <div class="fases-flow">
+      <div class="fase-card">
+        <div class="fase-num">01</div>
+        <div class="fase-name">El Problema</div>
+        <div class="fase-tag">El blanco</div>
+      </div>
+      <div class="fase-card">
+        <div class="fase-num">02</div>
+        <div class="fase-name">Brainstorming</div>
+        <div class="fase-tag">Cargar el tambor</div>
+      </div>
+      <div class="fase-card">
+        <div class="fase-num">03</div>
+        <div class="fase-name">Cada Uno Lo Suyo</div>
+        <div class="fase-tag">Las cámaras</div>
+      </div>
+      <div class="fase-card">
+        <div class="fase-num">04</div>
+        <div class="fase-name">El Revólver</div>
+        <div class="fase-tag">La explosión</div>
+      </div>
+      <div class="fase-card">
+        <div class="fase-num">05</div>
+        <div class="fase-name">La Multiplicación</div>
+        <div class="fase-tag">La fórmula</div>
+      </div>
+      <div class="fase-card">
+        <div class="fase-num">06</div>
+        <div class="fase-name">La Bala</div>
+        <div class="fase-tag">El disparo</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LA PÓLVORA -->
+<section class="models-section">
+  <div class="section-eyebrow">La pólvora</div>
+  <h2 class="section-title">Seis modelos. Seis miradas.</h2>
+  <p class="section-desc">
+    No un modelo elegido al azar. Seis modelos de frontera que no comparten arquitectura ni sesgos,
+    procesando las mismas perspectivas en paralelo para maximizar la tensión productiva.
+  </p>
+  <div class="models-grid">
+    <div class="model-card">
+      <div class="model-icon">
+        <!-- GPT-4o: neural network nodes -->
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <circle cx="10" cy="3"  r="2.2" stroke="white" stroke-width="1.4"/>
+          <circle cx="3"  cy="15" r="2.2" stroke="white" stroke-width="1.4"/>
+          <circle cx="17" cy="15" r="2.2" stroke="white" stroke-width="1.4"/>
+          <line x1="10" y1="5.2" x2="3.8"  y2="12.8" stroke="white" stroke-width="1.2"/>
+          <line x1="10" y1="5.2" x2="16.2" y2="12.8" stroke="white" stroke-width="1.2"/>
+          <line x1="5.2" y1="15" x2="14.8" y2="15"   stroke="white" stroke-width="1.2"/>
+        </svg>
+      </div>
+      <h3>GPT-4o</h3>
+      <p>Razonamiento amplio, síntesis narrativa, integración de contexto complejo.</p>
+    </div>
+    <div class="model-card">
+      <div class="model-icon">
+        <!-- Claude 3.7: nested diamond (layers of analysis) -->
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M10 2 L18 10 L10 18 L2 10 Z" stroke="white" stroke-width="1.5" fill="none"/>
+          <path d="M10 5.5 L14.5 10 L10 14.5 L5.5 10 Z" stroke="white" stroke-width="1.1" fill="rgba(255,255,255,0.12)"/>
+        </svg>
+      </div>
+      <h3>Claude 3.7</h3>
+      <p>Análisis profundo, pensamiento extendido, argumentación estructurada.</p>
+    </div>
+    <div class="model-card">
+      <div class="model-icon">
+        <!-- Gemini 2.0: two interlocking rings -->
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <circle cx="7"  cy="10" r="6" stroke="white" stroke-width="1.4"/>
+          <circle cx="13" cy="10" r="6" stroke="white" stroke-width="1.4"/>
+        </svg>
+      </div>
+      <h3>Gemini 2.0</h3>
+      <p>Multimodalidad, razonamiento multipasos, perspectiva sistémica.</p>
+    </div>
+    <div class="model-card">
+      <div class="model-icon">
+        <!-- DeepSeek R1: precision crosshair -->
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <circle cx="10" cy="10" r="7" stroke="white" stroke-width="1.4"/>
+          <circle cx="10" cy="10" r="2.5" fill="white"/>
+          <line x1="1" y1="10" x2="5"  y2="10" stroke="white" stroke-width="1.3"/>
+          <line x1="15" y1="10" x2="19" y2="10" stroke="white" stroke-width="1.3"/>
+          <line x1="10" y1="1" x2="10" y2="5"  stroke="white" stroke-width="1.3"/>
+          <line x1="10" y1="15" x2="10" y2="19" stroke="white" stroke-width="1.3"/>
+        </svg>
+      </div>
+      <h3>DeepSeek R1</h3>
+      <p>Razonamiento matemático y lógico, pensamiento en cadena, precisión analítica.</p>
+    </div>
+    <div class="model-card">
+      <div class="model-icon">
+        <!-- Grok 3: lightning bolt (speed + irreverence) -->
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M13 2 L7 10.5 H11.5 L7 18 L14 9 H9.5 Z" stroke="white" stroke-width="1.3" fill="rgba(255,255,255,0.2)" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h3>Grok 3</h3>
+      <p>Perspectiva crítica, análisis no convencional, cuestionamiento de supuestos.</p>
+    </div>
+    <div class="model-card">
+      <div class="model-icon">
+        <!-- Llama 4: code brackets (open source) -->
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M7 3 L2 10 L7 17" stroke="white" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M13 3 L18 10 L13 17" stroke="white" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h3>Llama 4</h3>
+      <p>Open source, razonamiento distribuido, perspectiva independiente.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<div class="cta-section">
+  <div class="section-eyebrow">Hora de disparar</div>
+  <h2 class="section-title">Carga el tambor.<br>Dispara la bala.</h2>
+  <div class="cta-sub">Tu equipo sabe más de lo que cree. REVOLVER lo demuestra.</div>
+  <br>
+  <button class="btn-cta-main" onclick="openApp()">Disparar REVOLVER &rarr;</button>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <strong>REVOLVER</strong> &mdash; Inteligencia colectiva aumentada &mdash; 2026
+</footer>
+
+<!-- APP OVERLAY -->
+<div id="app-overlay">
+  <div class="overlay-bar">
+    <div class="overlay-title">
+      <span>R</span>EVOLVE<span class="r-last-overlay">R</span>
+      <span style="font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:400;letter-spacing:0.1em;color:#666;margin-left:16px;text-transform:uppercase;">— Sesión en curso</span>
+    </div>
+    <button class="btn-close" onclick="closeApp()">&#x2715; Cerrar</button>
+  </div>
+  <iframe id="app-frame" src="" allow="fullscreen"></iframe>
+</div>
+<div id="backdrop"></div>
+
+<script>
+  const overlay = document.getElementById('app-overlay');
+  const frame   = document.getElementById('app-frame');
+  const backdrop = document.getElementById('backdrop');
+  let loaded = false;
+
+  function openApp() {
+    if (!loaded) { frame.src = '/app'; loaded = true; }
+    document.body.style.overflow = 'hidden';
+    overlay.classList.add('open');
+  }
+
+  function closeApp() {
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeApp(); });
+</script>
+</body>
+</html>

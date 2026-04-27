@@ -823,6 +823,23 @@ async def serve_responder(token: str):
     return FileResponse(os.path.join(BASE_DIR, 'responder.html'))
 
 
+# ── Favicon & app icons ──────────────────────────────────────────────────────
+
+@app.get('/favicon.svg', include_in_schema=False)
+async def serve_favicon_svg():
+    return FileResponse(os.path.join(BASE_DIR, 'favicon.svg'), media_type='image/svg+xml')
+
+
+@app.get('/favicon.ico', include_in_schema=False)
+async def serve_favicon_ico():
+    return FileResponse(os.path.join(BASE_DIR, 'favicon.ico'), media_type='image/x-icon')
+
+
+@app.get('/apple-touch-icon.png', include_in_schema=False)
+async def serve_apple_touch_icon():
+    return FileResponse(os.path.join(BASE_DIR, 'apple-touch-icon.png'), media_type='image/png')
+
+
 # ── Health ────────────────────────────────────────────────────────────────────
 
 @app.get('/api/health')
